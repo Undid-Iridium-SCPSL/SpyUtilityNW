@@ -6,7 +6,7 @@ namespace CISpyUtilityNW.Events
     {
         public void onWaveSpawn(TeamRespawnEvent respawnEvent)
         {
-            Log.Debug($"Called personal TeamRespawn base code");
+            Log.Debug($"Called personal TeamRespawn base code", CISpyUtilityNW.Instance.Config.Debug);
         }
     }
 }

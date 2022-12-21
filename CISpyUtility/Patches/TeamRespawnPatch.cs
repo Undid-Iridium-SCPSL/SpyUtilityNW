@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection.Emit;
 using CISpyUtilityNW.Events;
 using HarmonyLib;
 using static HarmonyLib.AccessTools;
 
 using NorthwoodLib.Pools;
+using PluginAPI.Core;
 using Respawning;
 
 namespace CISpyUtilityNW
@@ -39,9 +41,17 @@ namespace CISpyUtilityNW
 
         public static void HandleTeamRespawn(List<ReferenceHub> teamRespawnPlayers, RespawnManager respawnManager)
         {
-            TeamRespawnEvent respawnEvent = new TeamRespawnEvent(teamRespawnPlayers, respawnManager.NextKnownTeam);
+            try
+            {
+                TeamRespawnEvent respawnEvent = new TeamRespawnEvent(teamRespawnPlayers, respawnManager.NextKnownTeam);
 
-            PatchedEventHandlers.BeforeTeamRespawnEvent(respawnEvent);
+                Log.Debug("Handle team respawn", CISpyUtilityNW.Instance.Config.Debug);
+                PatchedEventHandlers.BeforeTeamRespawnEvent(respawnEvent);
+            }
+            catch (Exception failedToCreateEvent)
+            {
+                Log.Debug($"HandleTeamRespawn failed because {failedToCreateEvent}", CISpyUtilityNW.Instance.Config.Debug);
+            }
         }
     }
 }

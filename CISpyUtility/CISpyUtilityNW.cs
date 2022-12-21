@@ -28,15 +28,16 @@ namespace CISpyUtilityNW
             Instance = this;
             if (Config.IsEnabled)
             {
-                harmony = new Harmony($"com.Undid-Iridium.CleanupUtility.{DateTime.UtcNow.Ticks}");
+                harmony = new Harmony($"com.Undid-Iridium.CISpyUtilityNW.{DateTime.UtcNow.Ticks}");
                 harmony.PatchAll();
 
-                SpyManager = new CISpyManager(this);
+                // SpyManager = new CISpyManager();
                 PluginAPI.Events.EventManager.RegisterEvents(this);
-                PatchedEventHandlers.BeforeTeamRespawn += SpyManager.OnWaveSpawn;
                 PluginAPI.Events.EventManager.RegisterEvents<CISpyManager>(this);
+                PatchedEventHandlers.BeforeTeamRespawn += SpyManager.OnWaveSpawn;
+                
 
-                Log.Debug("We have started our plugin CISpyUtilityNW!!", Instance.Config.Debug);
+                Log.Debug("We have started our plugin CISpyUtilityNW!!", CISpyUtilityNW.Instance.Config.Debug);
             }
         }
 
@@ -47,13 +48,13 @@ namespace CISpyUtilityNW
         private void onWaveSpawn(SpawnableTeamType spawnTeamType)
         {
             Log.Debug(
-                $"What is ServerEventType.TeamRespawn {spawnTeamType == SpawnableTeamType.NineTailedFox} and blah");
+                $"What is ServerEventType.TeamRespawn {spawnTeamType == SpawnableTeamType.NineTailedFox} and blah", CISpyUtilityNW.Instance.Config.Debug);
         }
 
         [PluginEvent(ServerEventType.TeamRespawnSelected)]
         private void onWaveRespawn(SpawnableTeamType spawnTeamType)
         {
-            Log.Debug("What is ServerEventType.TeamRespawnSelected and blah");
+            Log.Debug("What is ServerEventType.TeamRespawnSelected and blah", CISpyUtilityNW.Instance.Config.Debug);
         }
     }
 }

@@ -14,6 +14,7 @@ namespace CISpyUtilityNW.Events
 
         public TeamRespawnEvent(List<ReferenceHub> curPlayers, SpawnableTeamType nextSpawningTeam)
         {
+            RespawningPlayers = new List<Player>();
             foreach (ReferenceHub referenceHub in curPlayers)
             {
                 RespawningPlayers.Add(Player.Get(referenceHub));
