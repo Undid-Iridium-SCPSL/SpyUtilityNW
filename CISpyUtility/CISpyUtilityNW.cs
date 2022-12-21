@@ -46,13 +46,14 @@ namespace CISpyUtilityNW
         [PluginEvent(ServerEventType.TeamRespawn)]
         private void onWaveSpawn(SpawnableTeamType spawnTeamType)
         {
-            Log.Info($"What is TeamRespawn {spawnTeamType == SpawnableTeamType.NineTailedFox} and blah");
+            Log.Info(
+                $"What is ServerEventType.TeamRespawn {spawnTeamType == SpawnableTeamType.NineTailedFox} and blah");
         }
 
         [PluginEvent(ServerEventType.TeamRespawnSelected)]
         private void onWaveRespawn(SpawnableTeamType spawnTeamType)
         {
-            Log.Info("What is TeamRespawn and blah");
+            Log.Info("What is ServerEventType.TeamRespawnSelected and blah");
         }
     }
 }
