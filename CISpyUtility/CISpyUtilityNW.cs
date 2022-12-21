@@ -34,7 +34,7 @@ namespace CISpyUtilityNW
                 SpyManager = new CISpyManager(this);
                 PluginAPI.Events.EventManager.RegisterEvents(this);
                 PatchedEventHandlers.BeforeTeamRespawn += SpyManager.OnWaveSpawn;
-                //PluginAPI.Events.EventManager.RegisterEvents<CISpyManager>(this);
+                PluginAPI.Events.EventManager.RegisterEvents<CISpyManager>(this);
 
                 Log.Debug("We have started our plugin CISpyUtilityNW!!", Instance.Config.Debug);
             }
@@ -46,14 +46,14 @@ namespace CISpyUtilityNW
         [PluginEvent(ServerEventType.TeamRespawn)]
         private void onWaveSpawn(SpawnableTeamType spawnTeamType)
         {
-            Log.Info(
+            Log.Debug(
                 $"What is ServerEventType.TeamRespawn {spawnTeamType == SpawnableTeamType.NineTailedFox} and blah");
         }
 
         [PluginEvent(ServerEventType.TeamRespawnSelected)]
         private void onWaveRespawn(SpawnableTeamType spawnTeamType)
         {
-            Log.Info("What is ServerEventType.TeamRespawnSelected and blah");
+            Log.Debug("What is ServerEventType.TeamRespawnSelected and blah");
         }
     }
 }
