@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using PluginAPI.Core;
 using Respawning;
 
-namespace CISpyUtilityNW.Events
+namespace SpyUtilityNW.Events
 {
     /// <summary>
     /// Team respawning event, contains spawning team, and players.

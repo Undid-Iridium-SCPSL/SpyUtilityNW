@@ -1,12 +1,12 @@
 ﻿using System;
-using CISpyUtilityNW.Events;
 using HarmonyLib;
 using PluginAPI.Core;
 using PluginAPI.Core.Attributes;
 using PluginAPI.Enums;
 using Respawning;
+using SpyUtilityNW.Events;
 
-namespace CISpyUtilityNW
+namespace SpyUtilityNW
 {
     public class SpyUtilityNW
     {
@@ -21,14 +21,14 @@ namespace CISpyUtilityNW
 
         public SpyManager SpyManager { get; set; }
 
-        [PluginEntryPoint("CISpyUtilityNW", "1.0.0",
+        [PluginEntryPoint("SpyUtilityNW", "1.0.0",
             "CI Spy plugin", "Undid Iridium")]
         private void LoadPlugin()
         {
             Instance = this;
             if (Config.IsEnabled)
             {
-                harmony = new Harmony($"com.Undid-Iridium.CISpyUtilityNW.{DateTime.UtcNow.Ticks}");
+                harmony = new Harmony($"com.Undid-Iridium.SpyUtilityNW.{DateTime.UtcNow.Ticks}");
                 harmony.PatchAll();
 
                 // SpyManager = new CISpyManager();
@@ -37,7 +37,7 @@ namespace CISpyUtilityNW
                 PatchedEventHandlers.BeforeTeamRespawn += SpyManager.OnWaveSpawn;
                 
 
-                Log.Debug("We have started our plugin CISpyUtilityNW!!", SpyUtilityNW.Instance.Config.Debug);
+                Log.Debug("We have started our plugin SpyUtilityNW!!", SpyUtilityNW.Instance.Config.Debug);
             }
         }
 

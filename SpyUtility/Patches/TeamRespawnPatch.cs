@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
-using CISpyUtilityNW.Events;
 using HarmonyLib;
 using static HarmonyLib.AccessTools;
 
 using NorthwoodLib.Pools;
 using PluginAPI.Core;
 using Respawning;
+using SpyUtilityNW.Events;
 
-namespace CISpyUtilityNW
+namespace SpyUtilityNW
 {
     [HarmonyPatch(typeof(RespawnManager), nameof(RespawnManager.Spawn))]
     public class TeamRespawnPatcher

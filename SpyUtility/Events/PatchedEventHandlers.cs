@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace CISpyUtilityNW.Events
+namespace SpyUtilityNW.Events
 {
     public class PatchedEventHandlers
     {

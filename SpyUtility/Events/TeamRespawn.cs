@@ -1,6 +1,6 @@
 ﻿using PluginAPI.Core;
 
-namespace CISpyUtilityNW.Events
+namespace SpyUtilityNW.Events
 {
     public class TeamRespawn
     {

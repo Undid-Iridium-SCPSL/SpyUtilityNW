@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CISpyUtility", "CISpyUtility\CISpyUtility.csproj", "{18102B22-0C6A-4B22-BA61-9FD650364BFE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpyUtility", "SpyUtility\SpyUtility.csproj", "{18102B22-0C6A-4B22-BA61-9FD650364BFE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

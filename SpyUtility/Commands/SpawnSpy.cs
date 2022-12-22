@@ -5,7 +5,7 @@ using PlayerRoles;
 using PluginAPI.Core;
 using RemoteAdmin;
 
-namespace CISpyUtilityNW.Commands
+namespace SpyUtilityNW.Commands
 {
     [CommandHandler(typeof(RemoteAdminCommandHandler))]
     public class SpawnSpy : ICommand
@@ -68,7 +68,7 @@ namespace CISpyUtilityNW.Commands
 
         private bool CreateSpy(out string response, Team curTeam, Player player, RoleTypeId newRole)
         {
-            Log.Info($" AddSpy player {player}, curTeam {curTeam}");
+            Log.Debug($" CreateSpy player {player}, curTeam {curTeam}", SpyUtilityNW.Instance.Config.Debug);
             if (SpyManager.ForceCreateSpy(player, team: curTeam, newRole))
             {
                 response = "Success in creating new spy";
@@ -82,7 +82,7 @@ namespace CISpyUtilityNW.Commands
 
         private bool RemoveSpy(out string response, Team curTeam, Player player)
         {
-            Log.Info($" RemoveSpy Player, {player}, curTeam {curTeam}");
+            Log.Debug($" RemoveSpy Player, {player}, curTeam {curTeam}", SpyUtilityNW.Instance.Config.Debug);
             SpyManager.ForceRemoveSpy(player, team: curTeam);
             response = "Attempted to remove spy.";
             return true;
@@ -90,7 +90,7 @@ namespace CISpyUtilityNW.Commands
 
         private bool AddSpy(out string response, Team curTeam, Player player)
         {
-            Log.Info($" AddSpy player {player}, curTeam {curTeam}");
+            Log.Debug($" AddSpy player {player}, curTeam {curTeam}", SpyUtilityNW.Instance.Config.Debug);
             if (SpyManager.ForceAddSpy(player, team: curTeam))
             {
                 response = "Success in creating new spy";

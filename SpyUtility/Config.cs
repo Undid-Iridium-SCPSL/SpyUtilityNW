@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace CISpyUtilityNW
+namespace SpyUtilityNW
 {
     public class Config
     {

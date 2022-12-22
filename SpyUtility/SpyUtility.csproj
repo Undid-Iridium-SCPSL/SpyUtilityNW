@@ -3,13 +3,14 @@
     <PropertyGroup>
         <TargetFramework>net4.8</TargetFramework>
         <LangVersion>9</LangVersion>
-        <AssemblyName>CISpyUtilityNW</AssemblyName>
+        <AssemblyName>SpyUtilityNW</AssemblyName>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Authors>Undid-Iridium</Authors>
         <Version>1.0.0</Version>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <RootNamespace>CISpyUtility</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

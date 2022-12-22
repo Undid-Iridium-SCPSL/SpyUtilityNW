@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using CISpyUtilityNW.Events;
 using PluginAPI.Core;
 using Respawning;
 using System.Linq;
@@ -10,10 +9,11 @@ using PlayerStatsSystem;
 using PluginAPI.Core.Attributes;
 using PluginAPI.Core.Interfaces;
 using PluginAPI.Enums;
+using SpyUtilityNW.Events;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace CISpyUtilityNW
+namespace SpyUtilityNW
 {
     public class SpyManager
     {
@@ -178,9 +178,8 @@ namespace CISpyUtilityNW
         [PluginEvent(ServerEventType.PlayerDamage)]
         public bool OnPlayerDamage(IPlayer target, IPlayer attacker, DamageHandlerBase damageHandler)
         {
-            Log.Debug($"ON player damaged attacker {attacker?.ReferenceHub}, and target {target?.ReferenceHub}" +
-                     $"and what are the roles? \n" +
-                     $"\nattacker.ReferenceHub.roleManager.CurrentRole.Team {attacker?.ReferenceHub?.roleManager.CurrentRole.Team}" +
+            Log.Debug($"\nOn player damaged attacker {attacker?.ReferenceHub}, and target {target?.ReferenceHub} and what are the roles? " + 
+                      "\nattacker.ReferenceHub.roleManager.CurrentRole.Team {attacker?.ReferenceHub?.roleManager.CurrentRole.Team}" +
                      $"\ntarget.ReferenceHub.roleManager.CurrentRole.Team { target?.ReferenceHub?.roleManager.CurrentRole.Team}", SpyUtilityNW.Instance.Config.Debug);
 
             if (target == attacker)
@@ -343,7 +342,6 @@ namespace CISpyUtilityNW
         [PluginEvent(ServerEventType.PlayerChangeRole)]
         public void OnRoleChange( IPlayer curPlayer, PlayerRoleBase curRoleBase, RoleTypeId curRoleId, RoleChangeReason curRoleChangeReason)
         {
-            //Log.Info($"PlayerChangeRole was called curPlayer {curPlayer}, curRoleBase {curRoleBase} curRoleId {curRoleId} curRoleChangeReason {curRoleChangeReason}");
             if (curRoleChangeReason is RoleChangeReason.RemoteAdmin)
             {
                 RemoveFromSpies(curPlayer);
@@ -407,7 +405,7 @@ namespace CISpyUtilityNW
             }
 
             player.ReferenceHub.roleManager.ServerSetRole(newRoleID, RoleChangeReason.None);
-            Log.Info($"Settings role {newRoleID} for player {player}, on team {team}");
+            Log.Debug($"Settings role {newRoleID} for player {player}, on team {team}", SpyUtilityNW.Instance.Config.Debug);
             return ForceAddSpy(player, team);
         }
     }
