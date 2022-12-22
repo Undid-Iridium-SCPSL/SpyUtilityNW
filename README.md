@@ -54,11 +54,5 @@ debug: false
 how_many_retries: 3
 
  ```
- 
-![NVIDIA_Share_YmibdG6PY2](https://user-images.githubusercontent.com/24619207/163738277-e2a80193-5ae2-497e-99fd-181468e7742f.png)
-![NVIDIA_Share_5ZWKPjTGmo](https://user-images.githubusercontent.com/24619207/163738279-76834f94-42ee-4bc6-845a-6eca3a60d577.png)
-![NVIDIA_Share_2TTTAws7Dt](https://user-images.githubusercontent.com/24619207/163738278-5dc8afe0-9dbe-4e02-92ca-c9056e57c369.png)
+ ![NVIDIA_Share_cWpADdebzt](https://user-images.githubusercontent.com/24619207/209059478-0fd54345-3cd3-4edd-8b31-6715989d0027.png)
 
-(The gap in time is ridtp to surface and spawning the items in)
-
-![image](https://user-images.githubusercontent.com/24619207/163898085-097de715-450f-47b9-adc1-ed5d019f789a.png)
