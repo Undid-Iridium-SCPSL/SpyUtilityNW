@@ -198,6 +198,7 @@ namespace CISpyUtilityNW
             Player curAttacker = Player.Get(attacker.ReferenceHub.netId);
             Player curTarget = Player.Get(target.ReferenceHub.netId);
 
+           
             RevealStatus wasCISpyRevealed = CheckIfCiSpyReveal(attackerTeam, targetTeam, curAttacker, curTarget, currentCISpies, currentMtfSpies);
             switch (wasCISpyRevealed)
             {
@@ -229,6 +230,7 @@ namespace CISpyUtilityNW
         private RevealStatus CheckIfMtfSpyReveal(Team attackerTeam, Team targetTeam, Player curAttacker,
             Player curTarget, ISet<Player> mtfSpies, ISet<Player> enemySpies)
         {
+            // If both are on the same team, possibly reveals
             if (attackerTeam == Team.ChaosInsurgency &&
                 targetTeam == Team.ChaosInsurgency)
             {
@@ -236,25 +238,26 @@ namespace CISpyUtilityNW
                 return revealRoleIfNeeded(curAttacker, curTarget, mtfSpies, RoleTypeId.NtfSergeant, enemySpies, RoleTypeId.ChaosRifleman);
             }
 
+            // If we're both spies, normal damage
+            if ((currentCISpies.Contains(curAttacker) && currentMtfSpies.Contains(curTarget)) || 
+                (currentMtfSpies.Contains(curAttacker) && currentCISpies.Contains(curTarget)))
+            {
+                return RevealStatus.AllowNormalDamage;
+            }
+            
+            // If target is MTF, and Chaos agent is MTF spy, do no damage
             if (targetTeam == Team.FoundationForces && currentMtfSpies.Contains(curAttacker))
             {
                 curAttacker.ReceiveHint($"<align=center><voffset=28em> <color=#F6511D> You're on {Team.FoundationForces} team, remember? </color></voffset></align>");
                 return RevealStatus.SpyAttackingTeammate;
             }
-                       
-            if (attackerTeam == Team.FoundationForces && currentCISpies.Contains(curAttacker))
-            {
-                Log.Info($"We were chaos, and then the spy was MTF hiding as chaos!");
-                return revealRoleIfNeeded(curAttacker, curTarget, mtfSpies, RoleTypeId.NtfSergeant, 
-                    enemySpies, RoleTypeId.ChaosRifleman);
-            }
             
+            // If attacker is MTF, and the target is Chaos agent who is MTF spy, do no damage.
             if (attackerTeam == Team.FoundationForces && currentMtfSpies.Contains(curTarget))
             {
                 curAttacker.ReceiveHint($"<align=center><voffset=28em> <color=#F6511D> They're on {Team.FoundationForces} team, remember? </color></voffset></align>");
                 return RevealStatus.SpyAttackingTeammate;
             }
- 
 
             
             return RevealStatus.AllowNormalDamage;
@@ -271,21 +274,18 @@ namespace CISpyUtilityNW
 
                 return revealRoleIfNeeded(curAttacker, curTarget, currentCiSpies, RoleTypeId.ChaosRifleman, enemySpies, RoleTypeId.NtfSergeant);
             }
+            
+            if ((currentCISpies.Contains(curAttacker) && currentMtfSpies.Contains(curTarget)) || 
+                (currentMtfSpies.Contains(curAttacker) && currentCISpies.Contains(curTarget)))
+            {
+                return RevealStatus.AllowNormalDamage;
+            }
 
             // If I am attacking a CI Spy attacking Chaos, I do no damage
             if (targetTeam == Team.ChaosInsurgency && currentCISpies.Contains(curAttacker))
             {
                 curAttacker.ReceiveHint($"<align=center><voffset=28em> <color=#F6511D> You're on {Team.ChaosInsurgency} team, remember? </color></voffset></align>");
                 return RevealStatus.SpyAttackingTeammate;
-            }
-            
-            // No point, if I am chaos really mtf, and they are mtf really chaos, it's still chaos vs mtf damage
-            // If I am chaos attacking an MTF spy, I reveal them, and myself if needed.
-            if (attackerTeam == Team.ChaosInsurgency && currentMtfSpies.Contains(curAttacker))
-            {
-                Log.Info($"We were chaos, and then the spy was MTF hiding as chaos!");
-                return revealRoleIfNeeded(curAttacker, curTarget, currentCiSpies, RoleTypeId.NtfSergeant, 
-                    enemySpies, RoleTypeId.ChaosRifleman);
             }
             
             // If I am chaos attacking another player who is a CI spy, I do no damage
@@ -295,8 +295,6 @@ namespace CISpyUtilityNW
                 return RevealStatus.SpyAttackingTeammate;
             }
          
-
-        
 
             return RevealStatus.AllowNormalDamage;
         }
@@ -326,7 +324,7 @@ namespace CISpyUtilityNW
                 curTeamSpyList.Remove(curAttacker);
                 curTarget.ReceiveHint("<align=center><voffset=28em> <color=#F6511D> You've been revealed!!! </color></voffset></align>");
                 
-                return RevealStatus.SpyWasRevealed;
+                return RevealStatus.SpiesWereRevealed;
             }
 
             // If the current attacker is spy attacking their "fake teammate", then reveals them.
@@ -345,7 +343,11 @@ namespace CISpyUtilityNW
         [PluginEvent(ServerEventType.PlayerChangeRole)]
         public void OnRoleChange( IPlayer curPlayer, PlayerRoleBase curRoleBase, RoleTypeId curRoleId, RoleChangeReason curRoleChangeReason)
         {
-            Log.Info($"PlayerChangeRole was called curPlayer {curPlayer}, curRoleBase {curRoleBase} curRoleId {curRoleId} curRoleChangeReason {curRoleChangeReason}");
+            //Log.Info($"PlayerChangeRole was called curPlayer {curPlayer}, curRoleBase {curRoleBase} curRoleId {curRoleId} curRoleChangeReason {curRoleChangeReason}");
+            if (curRoleChangeReason is RoleChangeReason.RemoteAdmin)
+            {
+                RemoveFromSpies(curPlayer);
+            }
         }
 
         [PluginEvent(ServerEventType.PlayerDeath)]
