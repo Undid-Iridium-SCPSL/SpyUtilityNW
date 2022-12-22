@@ -8,7 +8,7 @@ namespace SpyUtilityNW
         /// <summary>
         /// ah
         /// </summary>
-        [Description("Probability of CISpy's per wave.")]
+        [Description("Probability of spawning a CI spy per spy.")]
         public Dictionary<int, float> probabilityOfCISpy { get; set; } = new()
         {
             {1, 100f},
@@ -19,7 +19,7 @@ namespace SpyUtilityNW
         /// <summary>
         /// ah
         /// </summary>
-        [Description("Probability of MTF spy per wave.")]
+        [Description("Probability of spawning a Mtf spy per spy.")]
         public Dictionary<int, float> probabilityOfMtfSpy { get; set; } = new()
         {
             {1, 70f},
@@ -27,8 +27,10 @@ namespace SpyUtilityNW
             {3, 5f}
         };
         
-
-
+        /// <summary>
+        /// Whether plugin is enabled or not.
+        /// </summary>
+        [Description("Whether plugin is enabled or not.")]
         public bool IsEnabled { get; set; } = true;
 
         /// <summary>
@@ -38,9 +40,9 @@ namespace SpyUtilityNW
         public bool Debug { get; set; } = false;
         
         /// <summary>
-        ///     Gets or sets a value indicating whether debug logs should be shown.
+        ///     Gets or sets a value determining how many attempts to spawn a spy can occur.
         /// </summary>
-        [Description("Whether debug logs should be shown.")]
+        [Description("Gets or sets a value determining how many attempts to spawn a spy can occur.")]
         public int HowManyRetries { get; set; } = 3;
     }
 }
