@@ -231,7 +231,7 @@ namespace SpyUtilityNW
         {
             // If both are on the same team, possibly reveals
             if (attackerTeam == Team.ChaosInsurgency &&
-                targetTeam == Team.ChaosInsurgency)
+                targetTeam is Team.ChaosInsurgency or Team.ClassD)
             {
                 Log.Debug($"Well both were ChaosInsurgency forces", SpyUtilityNW.Instance.Config.Debug);
                 return revealRoleIfNeeded(curAttacker, curTarget, mtfSpies, RoleTypeId.NtfSergeant, enemySpies, RoleTypeId.ChaosRifleman);
@@ -245,14 +245,14 @@ namespace SpyUtilityNW
             }
             
             // If target is MTF, and Chaos agent is MTF spy, do no damage
-            if (targetTeam == Team.FoundationForces && currentMtfSpies.Contains(curAttacker))
+            if (targetTeam is Team.FoundationForces or Team.Scientists && currentMtfSpies.Contains(curAttacker))
             {
                 curAttacker.ReceiveHint($"<align=center><voffset=28em> <color=#F6511D> You're on {Team.FoundationForces} team, remember? </color></voffset></align>");
                 return RevealStatus.SpyAttackingTeammate;
             }
             
             // If attacker is MTF, and the target is Chaos agent who is MTF spy, do no damage.
-            if (attackerTeam == Team.FoundationForces && currentMtfSpies.Contains(curTarget))
+            if (attackerTeam is Team.FoundationForces or Team.Scientists && currentMtfSpies.Contains(curTarget))
             {
                 curAttacker.ReceiveHint($"<align=center><voffset=28em> <color=#F6511D> They're on {Team.FoundationForces} team, remember? </color></voffset></align>");
                 return RevealStatus.SpyAttackingTeammate;
@@ -267,7 +267,7 @@ namespace SpyUtilityNW
         {
             //If on same team, identify if we're spies, and whether we can do damage to each other
             if (attackerTeam == Team.FoundationForces &&
-                targetTeam == Team.FoundationForces)
+                targetTeam is Team.FoundationForces or Team.Scientists)
             {
                 Log.Debug($"Well both were foundation forces", SpyUtilityNW.Instance.Config.Debug);
 
@@ -281,14 +281,14 @@ namespace SpyUtilityNW
             }
 
             // If I am attacking a CI Spy attacking Chaos, I do no damage
-            if (targetTeam == Team.ChaosInsurgency && currentCISpies.Contains(curAttacker))
+            if (targetTeam is Team.ChaosInsurgency or Team.ClassD && currentCISpies.Contains(curAttacker))
             {
                 curAttacker.ReceiveHint($"<align=center><voffset=28em> <color=#F6511D> You're on {Team.ChaosInsurgency} team, remember? </color></voffset></align>");
                 return RevealStatus.SpyAttackingTeammate;
             }
             
             // If I am chaos attacking another player who is a CI spy, I do no damage
-            if (attackerTeam == Team.ChaosInsurgency && currentCISpies.Contains(curTarget))
+            if (attackerTeam is Team.ChaosInsurgency or Team.ClassD && currentCISpies.Contains(curTarget))
             {
                 curAttacker.ReceiveHint($"<align=center><voffset=28em> <color=#F6511D> They're on {Team.ChaosInsurgency} team, remember? </color></voffset></align>");
                 return RevealStatus.SpyAttackingTeammate;
@@ -355,13 +355,21 @@ namespace SpyUtilityNW
                       $"and what are the roles? \n" +
                       $"\nattacker.ReferenceHub.roleManager.CurrentRole.Team {attacker?.ReferenceHub?.roleManager.CurrentRole.Team}" +
                       $"\ntarget.ReferenceHub.roleManager.CurrentRole.Team { target?.ReferenceHub?.roleManager.CurrentRole.Team}", SpyUtilityNW.Instance.Config.Debug);
-            
+
+            if (target == null)
+            {
+                return;
+            }
             RemoveFromSpies(target);
         }
 
         private static void RemoveFromSpies(IPlayer target)
         {
             Player potentialSpy = Player.Get(target.ReferenceHub.netId);
+            if (potentialSpy == null)
+            {
+                return;
+            }
             currentCISpies.Remove(potentialSpy);
             currentMtfSpies.Remove(potentialSpy);
         }
