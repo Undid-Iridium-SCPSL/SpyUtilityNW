@@ -45,12 +45,12 @@ namespace CISpyUtilityNW
             {
                 TeamRespawnEvent respawnEvent = new TeamRespawnEvent(teamRespawnPlayers, respawnManager.NextKnownTeam);
 
-                Log.Debug("Handle team respawn", CISpyUtilityNW.Instance.Config.Debug);
+                Log.Debug("Handle team respawn", SpyUtilityNW.Instance.Config.Debug);
                 PatchedEventHandlers.BeforeTeamRespawnEvent(respawnEvent);
             }
             catch (Exception failedToCreateEvent)
             {
-                Log.Debug($"HandleTeamRespawn failed because {failedToCreateEvent}", CISpyUtilityNW.Instance.Config.Debug);
+                Log.Debug($"HandleTeamRespawn failed because {failedToCreateEvent}", SpyUtilityNW.Instance.Config.Debug);
             }
         }
     }

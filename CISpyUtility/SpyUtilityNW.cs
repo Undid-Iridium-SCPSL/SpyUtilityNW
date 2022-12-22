@@ -8,18 +8,18 @@ using Respawning;
 
 namespace CISpyUtilityNW
 {
-    public class CISpyUtilityNW
+    public class SpyUtilityNW
     {
         [PluginConfig] public Config Config;
 
         private Harmony harmony;
 
         /// <summary>
-        ///     Gets a static instance of the <see cref="CISpyUtilityNW" /> class.
+        ///     Gets a static instance of the <see cref="SpyUtilityNW" /> class.
         /// </summary>
-        public static CISpyUtilityNW Instance { get; private set; }
+        public static SpyUtilityNW Instance { get; private set; }
 
-        public CISpyManager SpyManager { get; set; }
+        public SpyManager SpyManager { get; set; }
 
         [PluginEntryPoint("CISpyUtilityNW", "1.0.0",
             "CI Spy plugin", "Undid Iridium")]
@@ -33,11 +33,11 @@ namespace CISpyUtilityNW
 
                 // SpyManager = new CISpyManager();
                 PluginAPI.Events.EventManager.RegisterEvents(this);
-                PluginAPI.Events.EventManager.RegisterEvents<CISpyManager>(this);
+                PluginAPI.Events.EventManager.RegisterEvents<SpyManager>(this);
                 PatchedEventHandlers.BeforeTeamRespawn += SpyManager.OnWaveSpawn;
                 
 
-                Log.Debug("We have started our plugin CISpyUtilityNW!!", CISpyUtilityNW.Instance.Config.Debug);
+                Log.Debug("We have started our plugin CISpyUtilityNW!!", SpyUtilityNW.Instance.Config.Debug);
             }
         }
 
@@ -48,13 +48,13 @@ namespace CISpyUtilityNW
         private void onWaveSpawn(SpawnableTeamType spawnTeamType)
         {
             Log.Debug(
-                $"What is ServerEventType.TeamRespawn {spawnTeamType == SpawnableTeamType.NineTailedFox} and blah", CISpyUtilityNW.Instance.Config.Debug);
+                $"What is ServerEventType.TeamRespawn {spawnTeamType == SpawnableTeamType.NineTailedFox} and blah", SpyUtilityNW.Instance.Config.Debug);
         }
 
         [PluginEvent(ServerEventType.TeamRespawnSelected)]
         private void onWaveRespawn(SpawnableTeamType spawnTeamType)
         {
-            Log.Debug("What is ServerEventType.TeamRespawnSelected and blah", CISpyUtilityNW.Instance.Config.Debug);
+            Log.Debug("What is ServerEventType.TeamRespawnSelected and blah", SpyUtilityNW.Instance.Config.Debug);
         }
     }
 }
