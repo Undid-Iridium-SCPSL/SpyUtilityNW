@@ -314,19 +314,12 @@ namespace SpyUtilityNW
             ISet<Player> curEnemyTeamList,
             RoleTypeId newEnemyRoleToSwapTo)
         {
-            Log.Info("1");
-            foreach (var player in curTeamSpyList)
-            {
-                Log.Info($"Player {player.Nickname} is a chaos as mtf spy");
-            }
             //If the attacker and target are both spies for same team
             if (curTeamSpyList.Contains(curAttacker) && curTeamSpyList.Contains(curTarget))
             {
-                Log.Info("2");
                 curAttacker.ReceiveHint(SpyUtilityNW.Instance.Config.SameTeamSpyMessage, SpyUtilityNW.Instance.Config.SameTeamSpyMessageHintDuration);
                 return RevealStatus.SpyDamagedSpy;
             }
-            Log.Info("3");
             //If attacker and target are spies for enemy teams (reveal both)
             if (curTeamSpyList.Contains(curAttacker) && curEnemyTeamList.Contains(curTarget)||
                 curTeamSpyList.Contains(curTarget) && curEnemyTeamList.Contains(curAttacker))
@@ -341,8 +334,6 @@ namespace SpyUtilityNW
                 
                 return RevealStatus.SpiesWereRevealed;
             }
-
-            Log.Info("4");
             // If the current attacker is spy attacking their "fake teammate", then reveals them.
             if (curTeamSpyList.Contains(curAttacker))
             {
@@ -352,7 +343,6 @@ namespace SpyUtilityNW
                 curAttacker.ReceiveHint(SpyUtilityNW.Instance.Config.SpyHasBeenRevealed, SpyUtilityNW.Instance.Config.SpyHasBeenRevealedHintDuration);
                 return RevealStatus.SpyWasRevealed;
             }
-            Log.Info("5");
             return RevealStatus.AllowNormalDamage;
         }
 
