@@ -68,7 +68,7 @@ namespace SpyUtilityNW.Commands
 
         private bool CreateSpy(out string response, Team curTeam, Player player, RoleTypeId newRole)
         {
-            Log.Debug($" CreateSpy player {player}, curTeam {curTeam}", SpyUtilityNW.Instance.Config.Debug);
+            Log.Debug($" CreateSpy player {player.Nickname}, curTeam {curTeam}", SpyUtilityNW.Instance.Config.Debug);
             if (SpyManager.ForceCreateSpy(player, team: curTeam, newRole))
             {
                 response = "Success in creating new spy";

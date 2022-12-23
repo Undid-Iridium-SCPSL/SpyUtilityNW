@@ -68,7 +68,11 @@ namespace SpyUtilityNW
                     TryToAddSpies(potentialSpies, respawningEvent, totalPlayers, howManyMtfSpies);
                     foreach (Player potentialSpy in potentialSpies)
                     {
-                        currentMtfSpies.Add(potentialSpy);
+                        if (currentMtfSpies.Add(potentialSpy))
+                        {
+                            var newSpyMessage = string.Format(SpyUtilityNW.Instance.Config.OnSpySpawnMessage, Team.FoundationForces);
+                            potentialSpy.ReceiveHint(newSpyMessage, SpyUtilityNW.Instance.Config.OnSpySpawnMessageHintDuration);
+                        }
                     }
                     break;
                 }
@@ -88,7 +92,11 @@ namespace SpyUtilityNW
                     /// Technically this can be reduced in TryToAddSpies to just add to static but I feel that is not safe.
                     foreach (Player potentialSpy in potentialSpies)
                     {
-                        currentCISpies.Add(potentialSpy);
+                        if (currentCISpies.Add(potentialSpy))
+                        {
+                            var newSpyMessage = string.Format(SpyUtilityNW.Instance.Config.OnSpySpawnMessage, Team.ChaosInsurgency);
+                            potentialSpy.ReceiveHint(newSpyMessage, SpyUtilityNW.Instance.Config.OnSpySpawnMessageHintDuration);
+                        }
                     }
 
                     break;
@@ -98,13 +106,6 @@ namespace SpyUtilityNW
                 default:
                     return;
             }
-            
-         
-            foreach (Player respawningPlayer in respawningEvent.RespawningPlayers)
-            {
-                Log.Debug($"Current player in respawning players {respawningPlayer.Nickname}", SpyUtilityNW.Instance.Config.Debug);
-            }
-
         }
 
         /// <summary>
@@ -247,18 +248,22 @@ namespace SpyUtilityNW
             // If target is MTF, and Chaos agent is MTF spy, do no damage
             if (targetTeam is Team.FoundationForces or Team.Scientists && currentMtfSpies.Contains(curAttacker))
             {
-                curAttacker.ReceiveHint($"<align=center><voffset=28em> <color=#F6511D> You're on {Team.FoundationForces} team, remember? </color></voffset></align>");
+                var attackingTeammateOnSameTeam = string.Format(SpyUtilityNW.Instance.Config.OnSpyAttackingTeammate,
+                    Team.FoundationForces);
+                curAttacker.ReceiveHint(attackingTeammateOnSameTeam, SpyUtilityNW.Instance.Config.OnSpyAttackingTeammateHintDuration);
                 return RevealStatus.SpyAttackingTeammate;
             }
             
             // If attacker is MTF, and the target is Chaos agent who is MTF spy, do no damage.
             if (attackerTeam is Team.FoundationForces or Team.Scientists && currentMtfSpies.Contains(curTarget))
             {
-                curAttacker.ReceiveHint($"<align=center><voffset=28em> <color=#F6511D> They're on {Team.FoundationForces} team, remember? </color></voffset></align>");
+                var attackingSpyOnSameTeam = string.Format(SpyUtilityNW.Instance.Config.OnTeammateAttackingSpy,
+                    Team.FoundationForces);
+                curAttacker.ReceiveHint(attackingSpyOnSameTeam, SpyUtilityNW.Instance.Config.OnTeammateAttackingSpyHintDuration);
                 return RevealStatus.SpyAttackingTeammate;
             }
 
-            
+            // Normal damage path
             return RevealStatus.AllowNormalDamage;
         }
 
@@ -274,27 +279,32 @@ namespace SpyUtilityNW
                 return revealRoleIfNeeded(curAttacker, curTarget, currentCiSpies, RoleTypeId.ChaosRifleman, enemySpies, RoleTypeId.NtfSergeant);
             }
             
+            // Spies do not reveal each other and do normal damage.
             if ((currentCISpies.Contains(curAttacker) && currentMtfSpies.Contains(curTarget)) || 
                 (currentMtfSpies.Contains(curAttacker) && currentCISpies.Contains(curTarget)))
             {
                 return RevealStatus.AllowNormalDamage;
             }
 
-            // If I am attacking a CI Spy attacking Chaos, I do no damage
+            // If I am a CI Spy attacking Chaos, I do no damage
             if (targetTeam is Team.ChaosInsurgency or Team.ClassD && currentCISpies.Contains(curAttacker))
             {
-                curAttacker.ReceiveHint($"<align=center><voffset=28em> <color=#F6511D> You're on {Team.ChaosInsurgency} team, remember? </color></voffset></align>");
+                var attackingTeammateOnSameTeam = string.Format(SpyUtilityNW.Instance.Config.OnSpyAttackingTeammate,
+                    Team.ChaosInsurgency);
+                curAttacker.ReceiveHint(attackingTeammateOnSameTeam, SpyUtilityNW.Instance.Config.OnSpyAttackingTeammateHintDuration);
                 return RevealStatus.SpyAttackingTeammate;
             }
             
-            // If I am chaos attacking another player who is a CI spy, I do no damage
+            // If I am chaos attacking CI spy, I do no damage
             if (attackerTeam is Team.ChaosInsurgency or Team.ClassD && currentCISpies.Contains(curTarget))
             {
-                curAttacker.ReceiveHint($"<align=center><voffset=28em> <color=#F6511D> They're on {Team.ChaosInsurgency} team, remember? </color></voffset></align>");
+                var attackingTeammateOnSameTeam = string.Format(SpyUtilityNW.Instance.Config.OnTeammateAttackingSpy,
+                    Team.ChaosInsurgency);
+                curAttacker.ReceiveHint(attackingTeammateOnSameTeam, SpyUtilityNW.Instance.Config.OnTeammateAttackingSpyHintDuration);
                 return RevealStatus.SpyAttackingTeammate;
             }
          
-
+            // Normal damage path
             return RevealStatus.AllowNormalDamage;
         }
 
@@ -307,35 +317,32 @@ namespace SpyUtilityNW
             //If the attacker and target are both spies for same team
             if (curTeamSpyList.Contains(curAttacker) && curTeamSpyList.Contains(curTarget))
             {
-                curAttacker.ReceiveHint("<align=center><voffset=28em> <color=#F6511D> That's a fellow spy! You can't attack them </color></voffset></align>");
+                curAttacker.ReceiveHint(SpyUtilityNW.Instance.Config.SameTeamSpyMessage, SpyUtilityNW.Instance.Config.SameTeamSpyMessageHintDuration);
                 return RevealStatus.SpyDamagedSpy;
             }
-
             //If attacker and target are spies for enemy teams (reveal both)
             if (curTeamSpyList.Contains(curAttacker) && curEnemyTeamList.Contains(curTarget)||
                 curTeamSpyList.Contains(curTarget) && curEnemyTeamList.Contains(curAttacker))
             {
                 curAttacker.ReferenceHub.roleManager.ServerSetRole(newRoleToSwapTo, RoleChangeReason.None);
                 curTeamSpyList.Remove(curAttacker);
-                curAttacker.ReceiveHint("<align=center><voffset=28em> <color=#F6511D> You've been revealed!!! </color></voffset></align>");
+                curAttacker.ReceiveHint(SpyUtilityNW.Instance.Config.SpyHasBeenRevealed, SpyUtilityNW.Instance.Config.SpyHasBeenRevealedHintDuration);
                 
                 curTarget.ReferenceHub.roleManager.ServerSetRole(newEnemyRoleToSwapTo, RoleChangeReason.None);
                 curTeamSpyList.Remove(curAttacker);
-                curTarget.ReceiveHint("<align=center><voffset=28em> <color=#F6511D> You've been revealed!!! </color></voffset></align>");
+                curAttacker.ReceiveHint(SpyUtilityNW.Instance.Config.SpyHasBeenRevealed, SpyUtilityNW.Instance.Config.SpyHasBeenRevealedHintDuration);
                 
                 return RevealStatus.SpiesWereRevealed;
             }
-
             // If the current attacker is spy attacking their "fake teammate", then reveals them.
             if (curTeamSpyList.Contains(curAttacker))
             {
                 Log.Debug($"Changing current player role from {curAttacker.ReferenceHub.roleManager.CurrentRole} to {newRoleToSwapTo} ", SpyUtilityNW.Instance.Config.Debug);
                 curAttacker.ReferenceHub.roleManager.ServerSetRole(newRoleToSwapTo, RoleChangeReason.None);
                 curTeamSpyList.Remove(curAttacker);
-                curAttacker.ReceiveHint("<align=center><voffset=28em> <color=#F6511D> You've been revealed!!! </color></voffset></align>");
+                curAttacker.ReceiveHint(SpyUtilityNW.Instance.Config.SpyHasBeenRevealed, SpyUtilityNW.Instance.Config.SpyHasBeenRevealedHintDuration);
                 return RevealStatus.SpyWasRevealed;
             }
-            
             return RevealStatus.AllowNormalDamage;
         }
 
@@ -413,8 +420,23 @@ namespace SpyUtilityNW
             }
 
             player.ReferenceHub.roleManager.ServerSetRole(newRoleID, RoleChangeReason.None);
-            Log.Debug($"Settings role {newRoleID} for player {player}, on team {team}", SpyUtilityNW.Instance.Config.Debug);
+            var newSpyMessage = string.Format(SpyUtilityNW.Instance.Config.OnSpySpawnMessage, team);
+            player.ReceiveHint(newSpyMessage, SpyUtilityNW.Instance.Config.OnSpySpawnMessageHintDuration);
+            Log.Debug($"Settings role {newRoleID} for player {player.Nickname}, on team {team}", SpyUtilityNW.Instance.Config.Debug);
             return ForceAddSpy(player, team);
+        }
+        
+        /// <summary>
+        /// DESYNC'S THE GAME. DO NOT USE
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="type"></param>
+        public static void ChangeAppearance(Player player, RoleTypeId type)
+        {
+            {
+                foreach (Player target in Player.GetPlayers().Where(x => x != player))
+                    target.Connection.Send(new RoleSyncInfo(player.ReferenceHub, type, target.ReferenceHub));
+            }
         }
     }
 }
