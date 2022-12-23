@@ -21,7 +21,7 @@ namespace SpyUtilityNW
 
         public SpyManager SpyManager { get; set; }
 
-        [PluginEntryPoint("SpyUtilityNW", "1.0.0",
+        [PluginEntryPoint("SpyUtilityNW", "1.0.1",
             "Spy plugin", "Undid Iridium")]
         private void LoadPlugin()
         {
