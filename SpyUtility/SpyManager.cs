@@ -66,7 +66,7 @@ namespace SpyUtilityNW
                         Log.Debug($"Probability of ci spy {keyValuePair.Key} and {keyValuePair.Value}", SpyUtilityNW.Instance.Config.Debug);
                         if (Random.Range(0, 100) < keyValuePair.Value)
                         {
-                            Log.Debug($"Probability of spy was lucky, adding spy {howManyMtfSpies}");
+                            Log.Debug($"Probability of spy was lucky, adding spy {howManyMtfSpies}", SpyUtilityNW.Instance.Config.Debug);
                             howManyMtfSpies++;
                         }
                     } 
@@ -136,9 +136,9 @@ namespace SpyUtilityNW
                     
                      Timing.CallDelayed(.05f, () =>
                      {
-                         Log.Info($"Cur pos {potentialSpy.Position} and past position {potentialSpyPosition}");
-                         
-                         potentialSpy.Position = currentSpyLoadout.SpawnPosition == Vector3.zero ? potentialSpyPosition : currentSpyLoadout.SpawnPosition;
+                         Vector3 roleLoadoutVector = new Vector3((float) currentSpyLoadout?.SpawnPosition.Item1,
+                             currentSpyLoadout.SpawnPosition.Item2, currentSpyLoadout.SpawnPosition.Item3);
+                         potentialSpy.Position = roleLoadoutVector == Vector3.zero ? potentialSpyPosition : roleLoadoutVector;
                          potentialSpy.ReferenceHub.inventory.UserInventory.Items.Clear();
                          potentialSpy.ReferenceHub.inventory.UserInventory.ReserveAmmo.Clear();
                          
@@ -521,11 +521,11 @@ namespace SpyUtilityNW
             switch (team)
             {
                 case Team.ChaosInsurgency:
-                    Log.Info($"Changing appearance of foundation to ntfsergeant from {newRoleID}");
+                    Log.Debug($"Changing appearance of foundation to ntfsergeant from {newRoleID}", SpyUtilityNW.Instance.Config.Debug);
                     ChangeAppearance(player, RoleTypeId.NtfSergeant);
                     break;
                 case Team.FoundationForces:
-                    Log.Info($"Changing appearance of foundation to rifleman from {newRoleID}");
+                    Log.Debug($"Changing appearance of foundation to rifleman from {newRoleID}", SpyUtilityNW.Instance.Config.Debug);
                     ChangeAppearance(player, RoleTypeId.ChaosRifleman);
                     break;
             }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using PlayerRoles;
 using UnityEngine;
@@ -37,7 +38,7 @@ namespace SpyUtilityNW.Spies
         /// Override spawn position
         /// </summary>
         [Description("Override spy spawn position (Vector3). I DO NOT RECOMMEND.")]
-        public override Vector3 SpawnPosition { get; set; } = Vector3.zero;
+        public override Tuple<float, float, float> SpawnPosition { get; set; } = new(0, 0, 0);
         
         /// <summary>
         /// Spies fake role, role that is used in change appearance

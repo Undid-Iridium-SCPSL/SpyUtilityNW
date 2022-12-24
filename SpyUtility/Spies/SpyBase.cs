@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using PlayerRoles;
 using UnityEngine;
 
@@ -10,7 +11,7 @@ namespace SpyUtilityNW.Spies
         
         public abstract Dictionary<ItemType, ushort> SpyStartingAmmo { get; set; }
         
-        public abstract Vector3 SpawnPosition { get; set; }
+        public abstract Tuple<float, float, float> SpawnPosition { get; set; }
         
         public abstract RoleTypeId SpyFakeRole { get; set; }
         
