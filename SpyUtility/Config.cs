@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
+using SpyUtilityNW.Spies;
 
 namespace SpyUtilityNW
 {
@@ -112,7 +113,17 @@ namespace SpyUtilityNW
         [Description("How long to show OnSpySpawnMessage for.")]
         public float SameTeamSpyMessageHintDuration { get; set; } = 3f;
 
+        /// <summary>
+        /// CI Spy loadout <see cref="CiSpyBase"/>
+        /// </summary>
+        [Description("CI Spy loadout.")]
+        public CiSpyBase CiSpyLoadout { get; set; } = new CiSpyBase();
 
- 
+        /// <summary>
+        /// MTF Spy loadout <see cref="MtfSpyBase"/>
+        /// </summary>
+        [Description("MTF Spy loadout.")]
+        public MtfSpyBase MtfSpyLoadout { get; set; } = new MtfSpyBase();
+
     }
 }
