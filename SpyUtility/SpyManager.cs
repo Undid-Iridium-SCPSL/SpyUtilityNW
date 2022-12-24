@@ -176,7 +176,7 @@ namespace SpyUtilityNW
                 {
                     if (attempt >= 3)
                     {
-                        Log.Debug($"After 3 attempts, no spy was found. Skipping sky", SpyUtilityNW.Instance.Config.Debug);
+                        Log.Debug($"After 3 attempts, no spy was found. Skipping spy", SpyUtilityNW.Instance.Config.Debug);
                         unableToFind = true;
                         break;
                     }
@@ -533,7 +533,7 @@ namespace SpyUtilityNW
         /// <param name="type"></param>
         public static void ChangeAppearance(Player player, RoleTypeId type)
         {
-            Log.Debug($"Changing Appearance of player {player.Nickname} to {type}");
+            Log.Debug($"Changing Appearance of player {player.Nickname} to {type}", SpyUtilityNW.Instance.Config.Debug);
             Timing.CallDelayed(.5f, () =>
             {
                 foreach (Player target in Player.GetPlayers().Where(x => x != player))
