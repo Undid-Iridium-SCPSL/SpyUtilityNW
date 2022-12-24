@@ -40,7 +40,12 @@ namespace SpyUtilityNW.Spies
         /// Override spawn position
         /// </summary>
         [Description("Override spy spawn position (Vector3). I DO NOT RECOMMEND.")]
-        public override Tuple<float, float, float> SpawnPosition { get; set; } = new(0, 0, 0);
+        public override List<float> SpawnPosition { get; set; } = new()
+        {
+            0f,
+            0f,
+            0f
+        };
         
         /// <summary>
         /// Spies fake role, role that is used in change appearance

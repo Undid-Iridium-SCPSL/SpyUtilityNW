@@ -112,23 +112,10 @@ namespace SpyUtilityNW
             }
         }
 
-        private void ChangeSpawnInventory(Player potentialSpy, SpyBase currentSpyLoadout, Team team)
+        private static void ChangeSpawnInventory(Player potentialSpy, SpyBase currentSpyLoadout, Team team)
         {
              Timing.CallDelayed(.05f, () => {
                  var potentialSpyPosition = potentialSpy.Position;
-                 // var player_items = new List<ItemType>();
-                 // var player_ammo = new Dictionary<ItemType, ushort>();
-                 //
-                 // foreach (KeyValuePair<ItemType, ushort> paired_ammo_data in potentialSpy.ReferenceHub.inventory.UserInventory.ReserveAmmo)
-                 // {
-                 //     player_ammo.Add(paired_ammo_data.Key, paired_ammo_data.Value);
-                 // }
-                 // foreach (KeyValuePair<ushort, ItemBase> userInventoryItem in potentialSpy.ReferenceHub.inventory.UserInventory.Items)
-                 // {
-                 //     Log.Info($"What is the current item id {userInventoryItem.Value.ItemTypeId}");
-                 //     player_items.Add(userInventoryItem.Value.ItemTypeId);
-                 // }
-                
                  Timing.CallDelayed(.05f, () =>
                  {
                      potentialSpy.ReferenceHub.roleManager.ServerSetRole(currentSpyLoadout.SpyRealRole,
@@ -136,8 +123,8 @@ namespace SpyUtilityNW
                     
                      Timing.CallDelayed(.05f, () =>
                      {
-                         Vector3 roleLoadoutVector = new Vector3((float) currentSpyLoadout?.SpawnPosition.Item1,
-                             currentSpyLoadout.SpawnPosition.Item2, currentSpyLoadout.SpawnPosition.Item3);
+                         Vector3 roleLoadoutVector = new Vector3(currentSpyLoadout.SpawnPosition[0],
+                             currentSpyLoadout.SpawnPosition[1],currentSpyLoadout.SpawnPosition[2]);
                          potentialSpy.Position = roleLoadoutVector == Vector3.zero ? potentialSpyPosition : roleLoadoutVector;
                          potentialSpy.ReferenceHub.inventory.UserInventory.Items.Clear();
                          potentialSpy.ReferenceHub.inventory.UserInventory.ReserveAmmo.Clear();
@@ -155,22 +142,6 @@ namespace SpyUtilityNW
                          {
                              potentialSpy.ReferenceHub.inventory.ServerAddAmmo(pairedAmmoTypeAndQty.Key, pairedAmmoTypeAndQty.Value);
                          }
-                         
-                         // foreach (var playerItem in player_items)
-                         // {
-                         //     var item = potentialSpy.ReferenceHub.inventory.ServerAddItem(playerItem);
-                         //     if (item is Firearm curFireArm)
-                         //     {
-                         //         curFireArm.Status = new FirearmStatus(curFireArm.AmmoManagerModule.MaxAmmo, curFireArm.Status.Flags, curFireArm.Status.Attachments);
-                         //     }
-                         // }
-                         //
-                         // foreach (var pairedAmmoTypeAndQty in player_ammo)
-                         // {
-                         //     potentialSpy.ReferenceHub.inventory.ServerAddAmmo(pairedAmmoTypeAndQty.Key, pairedAmmoTypeAndQty.Value);
-                         // }
-                         
-                         // potentialSpy.ReferenceHub.inventory.UserInventory.Items = player_items;
                          potentialSpy.ReferenceHub.inventory.SendItemsNextFrame = true;
                          ChangeAppearance(potentialSpy, currentSpyLoadout.SpyFakeRole);
                          var newSpyMessage = string.Format(SpyUtilityNW.Instance.Config.OnSpySpawnMessage,
@@ -310,30 +281,34 @@ namespace SpyUtilityNW
             Player curTarget, ISet<Player> mtfSpies, ISet<Player> enemySpies)
         {
             // If spy has not been revealed yet, reject damage.
-            if (attackerTeam is Team.FoundationForces or Team.Scientists && currentCISpies.Contains(curTarget))
+            if (attackerTeam is Team.FoundationForces or Team.Scientists && currentCISpies.Contains(curTarget) && !currentMtfSpies.Contains(curAttacker))
             {
-                Log.Debug($"Spy has not been revealed yet, reject damage.", SpyUtilityNW.Instance.Config.Debug);
+                Log.Debug($"FoundationForces Spy has not been revealed yet, reject damage. CheckIfMtfSpyReveal", SpyUtilityNW.Instance.Config.Debug);
                 return RevealStatus.RejectDamage;
             }
             
             // If both are on the same team, possibly reveals
             if (targetTeam is Team.ChaosInsurgency or Team.ClassD)
             {
-                Log.Debug($"targetTeam was ChaosInsurgency forces", SpyUtilityNW.Instance.Config.Debug);
-                return revealRoleIfNeeded(curAttacker, curTarget, mtfSpies, RoleTypeId.NtfSergeant, enemySpies, RoleTypeId.ChaosRifleman);
+                Log.Debug($"targetTeam was ChaosInsurgency forces. CheckIfMtfSpyReveal", SpyUtilityNW.Instance.Config.Debug);
+                return revealRoleIfNeeded(curAttacker, curTarget, mtfSpies, 
+                    SpyUtilityNW.Instance.Config.MtfSpyLoadout.SpyRealRole,
+                    enemySpies, 
+                    SpyUtilityNW.Instance.Config.CiSpyLoadout.SpyRealRole);
             }
 
             // If we're both spies, normal damage
             if ((currentCISpies.Contains(curAttacker) && currentMtfSpies.Contains(curTarget)) || 
                 (currentMtfSpies.Contains(curAttacker) && currentCISpies.Contains(curTarget)))
             {
-                Log.Debug($"Both are spies so normal damage", SpyUtilityNW.Instance.Config.Debug);
+                Log.Debug($"If we're both spies, normal damage. CheckIfMtfSpyReveal", SpyUtilityNW.Instance.Config.Debug);
                 return RevealStatus.AllowNormalDamage;
             }
             
             // If target is MTF, and Chaos agent is MTF spy, do no damage
             if (targetTeam is Team.FoundationForces or Team.Scientists && currentMtfSpies.Contains(curAttacker))
             {
+                Log.Debug($"If target is MTF, and Chaos agent is MTF spy, do no damage. CheckIfMtfSpyReveal", SpyUtilityNW.Instance.Config.Debug);
                 var attackingTeammateOnSameTeam = string.Format(SpyUtilityNW.Instance.Config.OnSpyAttackingTeammate,
                     Team.FoundationForces);
                 curAttacker.ReceiveHint(attackingTeammateOnSameTeam, SpyUtilityNW.Instance.Config.OnSpyAttackingTeammateHintDuration);
@@ -343,12 +318,14 @@ namespace SpyUtilityNW
             // If attacker is MTF, and the target is Chaos agent who is MTF spy, do no damage.
             if (attackerTeam is Team.FoundationForces or Team.Scientists && currentMtfSpies.Contains(curTarget))
             {
+                Log.Debug($"If attacker is MTF, and the target is Chaos agent who is MTF spy, do no damage. CheckIfMtfSpyReveal", SpyUtilityNW.Instance.Config.Debug);
                 var attackingSpyOnSameTeam = string.Format(SpyUtilityNW.Instance.Config.OnTeammateAttackingSpy,
                     Team.FoundationForces);
                 curAttacker.ReceiveHint(attackingSpyOnSameTeam, SpyUtilityNW.Instance.Config.OnTeammateAttackingSpyHintDuration);
                 return RevealStatus.SpyAttackingTeammate;
             }
 
+            Log.Debug($"Default path. CheckIfMtfSpyReveal", SpyUtilityNW.Instance.Config.Debug);
             // Normal damage path
             return RevealStatus.AllowNormalDamage;
         }
@@ -357,30 +334,35 @@ namespace SpyUtilityNW
             Player curTarget, ISet<Player> currentCiSpies, ISet<Player> enemySpies)
         {
             // If spy has not been revealed yet, reject damage.
-            if (attackerTeam is Team.ChaosInsurgency or Team.ClassD && currentMtfSpies.Contains(curTarget))
+            if (attackerTeam is Team.ChaosInsurgency or Team.ClassD && currentMtfSpies.Contains(curTarget)&& !currentCiSpies.Contains(curAttacker))
             {
-                Log.Debug($"Spy has not been revealed yet, reject damage.", SpyUtilityNW.Instance.Config.Debug);
+                Log.Debug($"Spy has not been revealed yet, reject damage. CheckIfCiSpyReveal", SpyUtilityNW.Instance.Config.Debug);
                 return RevealStatus.RejectDamage;
             }
             
             //If on same team, identify if we're spies, and whether we can do damage to each other
             if (targetTeam is Team.FoundationForces or Team.Scientists)
             {
-                Log.Debug($"targetTeam was foundation forces", SpyUtilityNW.Instance.Config.Debug);
+                Log.Debug($"targetTeam was foundation forces CheckIfCiSpyReveal", SpyUtilityNW.Instance.Config.Debug);
 
-                return revealRoleIfNeeded(curAttacker, curTarget, currentCiSpies, RoleTypeId.ChaosRifleman, enemySpies, RoleTypeId.NtfSergeant);
+                return revealRoleIfNeeded(curAttacker, curTarget, currentCiSpies, 
+                    SpyUtilityNW.Instance.Config.CiSpyLoadout.SpyRealRole,
+                    enemySpies, 
+                    SpyUtilityNW.Instance.Config.MtfSpyLoadout.SpyRealRole);
             }
             
             // Spies do not reveal each other and do normal damage.
             if ((currentCISpies.Contains(curAttacker) && currentMtfSpies.Contains(curTarget)) || 
                 (currentMtfSpies.Contains(curAttacker) && currentCISpies.Contains(curTarget)))
             {
+                Log.Debug($"Spies do not reveal each other and do normal damage.foundation forces CheckIfCiSpyReveal", SpyUtilityNW.Instance.Config.Debug);
                 return RevealStatus.AllowNormalDamage;
             }
 
             // If I am a CI Spy attacking Chaos, I do no damage
             if (targetTeam is Team.ChaosInsurgency or Team.ClassD && currentCISpies.Contains(curAttacker))
             {
+                Log.Debug($"If I am a CI Spy attacking Chaos, I do no damage. CheckIfCiSpyReveal", SpyUtilityNW.Instance.Config.Debug);
                 var attackingTeammateOnSameTeam = string.Format(SpyUtilityNW.Instance.Config.OnSpyAttackingTeammate,
                     Team.ChaosInsurgency);
                 curAttacker.ReceiveHint(attackingTeammateOnSameTeam, SpyUtilityNW.Instance.Config.OnSpyAttackingTeammateHintDuration);
@@ -390,12 +372,14 @@ namespace SpyUtilityNW
             // If I am chaos attacking CI spy, I do no damage
             if (attackerTeam is Team.ChaosInsurgency or Team.ClassD && currentCISpies.Contains(curTarget))
             {
+                Log.Debug($"If I am chaos attacking CI spy, I do no damage. CheckIfCiSpyReveal", SpyUtilityNW.Instance.Config.Debug);
                 var attackingTeammateOnSameTeam = string.Format(SpyUtilityNW.Instance.Config.OnTeammateAttackingSpy,
                     Team.ChaosInsurgency);
                 curAttacker.ReceiveHint(attackingTeammateOnSameTeam, SpyUtilityNW.Instance.Config.OnTeammateAttackingSpyHintDuration);
                 return RevealStatus.SpyAttackingTeammate;
             }
          
+            Log.Debug($"Default path. CheckIfCiSpyReveal", SpyUtilityNW.Instance.Config.Debug);
             // Normal damage path
             return RevealStatus.AllowNormalDamage;
         }
@@ -409,6 +393,7 @@ namespace SpyUtilityNW
             //If the attacker and target are both spies for same team
             if (curTeamSpyList.Contains(curAttacker) && curTeamSpyList.Contains(curTarget))
             {
+                Log.Debug($"Both attacker and target were spies for the same team {curAttacker.Nickname} and {curTarget.Nickname}", SpyUtilityNW.Instance.Config.Debug);
                 curAttacker.ReceiveHint(SpyUtilityNW.Instance.Config.SameTeamSpyMessage, SpyUtilityNW.Instance.Config.SameTeamSpyMessageHintDuration);
                 return RevealStatus.SpyDamagedSpy;
             }
@@ -416,13 +401,19 @@ namespace SpyUtilityNW
             if ( (curTeamSpyList.Contains(curAttacker) && curEnemyTeamList.Contains(curTarget)) ||
                  (curTeamSpyList.Contains(curTarget) && curEnemyTeamList.Contains(curAttacker)) )
             {
+                if (curAttacker.ReferenceHub.roleManager.CurrentRole.Team ==
+                    curTarget.ReferenceHub.roleManager.CurrentRole.Team)
+                {
+                    return RevealStatus.RejectDamage;
+                }
+                Log.Debug($"Both attacker and target were spies {curAttacker.Nickname} and {curTarget.Nickname}", SpyUtilityNW.Instance.Config.Debug);
                 // curAttacker.ReferenceHub.roleManager.ServerSetRole(newRoleToSwapTo, RoleChangeReason.None);
-                curTeamSpyList.Remove(curAttacker);
+                RemoveFromSpies(curAttacker);
                 ChangeAppearance(curAttacker, newRoleToSwapTo);
                 curAttacker.ReceiveHint(SpyUtilityNW.Instance.Config.SpyHasBeenRevealed, SpyUtilityNW.Instance.Config.SpyHasBeenRevealedHintDuration);
                 
                 //curTarget.ReferenceHub.roleManager.ServerSetRole(newEnemyRoleToSwapTo, RoleChangeReason.None);
-                curTeamSpyList.Remove(curAttacker);
+                RemoveFromSpies(curTarget);
                 ChangeAppearance(curTarget, newEnemyRoleToSwapTo);
                 curAttacker.ReceiveHint(SpyUtilityNW.Instance.Config.SpyHasBeenRevealed, SpyUtilityNW.Instance.Config.SpyHasBeenRevealedHintDuration);
                 
@@ -514,7 +505,7 @@ namespace SpyUtilityNW
                 };
             }
 
-            player.ReferenceHub.roleManager.ServerSetRole(newRoleID, RoleChangeReason.None);
+            // player.ReferenceHub.roleManager.ServerSetRole(newRoleID, RoleChangeReason.None);
             var newSpyMessage = string.Format(SpyUtilityNW.Instance.Config.OnSpySpawnMessage, team);
             player.ReceiveHint(newSpyMessage, SpyUtilityNW.Instance.Config.OnSpySpawnMessageHintDuration);
             Log.Debug($"Settings role {newRoleID} for player {player.Nickname}, on team {team}", SpyUtilityNW.Instance.Config.Debug);
@@ -522,11 +513,13 @@ namespace SpyUtilityNW
             {
                 case Team.ChaosInsurgency:
                     Log.Debug($"Changing appearance of foundation to ntfsergeant from {newRoleID}", SpyUtilityNW.Instance.Config.Debug);
-                    ChangeAppearance(player, RoleTypeId.NtfSergeant);
+                    // ChangeAppearance(player, RoleTypeId.NtfSergeant);
+                    ChangeSpawnInventory(player, SpyUtilityNW.Instance.Config.CiSpyLoadout, team);
                     break;
                 case Team.FoundationForces:
                     Log.Debug($"Changing appearance of foundation to rifleman from {newRoleID}", SpyUtilityNW.Instance.Config.Debug);
-                    ChangeAppearance(player, RoleTypeId.ChaosRifleman);
+                    // ChangeAppearance(player, RoleTypeId.ChaosRifleman);
+                    ChangeSpawnInventory(player, SpyUtilityNW.Instance.Config.MtfSpyLoadout, team);
                     break;
             }
             

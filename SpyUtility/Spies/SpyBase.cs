@@ -11,7 +11,7 @@ namespace SpyUtilityNW.Spies
         
         public abstract Dictionary<ItemType, ushort> SpyStartingAmmo { get; set; }
         
-        public abstract Tuple<float, float, float> SpawnPosition { get; set; }
+        public abstract List<float> SpawnPosition { get; set; }
         
         public abstract RoleTypeId SpyFakeRole { get; set; }
         
