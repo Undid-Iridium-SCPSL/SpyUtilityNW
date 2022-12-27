@@ -554,7 +554,7 @@ namespace SpyUtilityNW
         public static void ChangeAppearance(Player player, RoleTypeId type)
         {
             Log.Debug($"Changing Appearance of player {player.Nickname} to {type}", SpyUtilityNW.Instance.Config.Debug);
-            Timing.CallDelayed(.5f, () =>
+            Timing.CallDelayed(SpyUtilityNW.Instance.Config.ChangeAppearanceDelay, () =>
             {
                 foreach (Player target in Player.GetPlayers().Where(x => x != player))
                     target.Connection.Send(new RoleSyncInfo(player.ReferenceHub, type, target.ReferenceHub));
