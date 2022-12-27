@@ -136,5 +136,11 @@ namespace SpyUtilityNW
         /// </summary>
         [Description("How long to delay the respawn role change.")]
         public float RespawnChangeRoleItemsDelay { get; set; } = 0.05f;
+
+        /// <summary>
+        /// How long to delay before changing the spy appearance
+        /// </summary>
+        [Description("How long to delay the appearance change.")]
+        public float ChangeAppearanceDelay { get; set; } = 0.05f;
     }
 }
