@@ -7,12 +7,14 @@ using HarmonyLib;
 using InventorySystem;
 using InventorySystem.Items;
 using InventorySystem.Items.Firearms;
+using MapGeneration;
 using MEC;
 using Mirror;
 using PlayerRoles;
 using PlayerStatsSystem;
 using PluginAPI.Core.Attributes;
 using PluginAPI.Core.Interfaces;
+using PluginAPI.Core.Zones;
 using PluginAPI.Enums;
 using SpyUtilityNW.Events;
 using SpyUtilityNW.Spies;
@@ -114,14 +116,14 @@ namespace SpyUtilityNW
 
         private static void ChangeSpawnInventory(Player potentialSpy, SpyBase currentSpyLoadout, Team team)
         {
-             Timing.CallDelayed(.05f, () => {
+             Timing.CallDelayed(SpyUtilityNW.Instance.Config.RespawnChangeRoleDelay, () => {
                  var potentialSpyPosition = potentialSpy.Position;
-                 Timing.CallDelayed(.05f, () =>
+                 Timing.CallDelayed(SpyUtilityNW.Instance.Config.RespawnChangeRoleDelay, () =>
                  {
                      potentialSpy.ReferenceHub.roleManager.ServerSetRole(currentSpyLoadout.SpyRealRole,
                          RoleChangeReason.None);
                     
-                     Timing.CallDelayed(.05f, () =>
+                     Timing.CallDelayed(SpyUtilityNW.Instance.Config.RespawnChangeRoleItemsDelay, () =>
                      {
                          Vector3 roleLoadoutVector = new Vector3(currentSpyLoadout.SpawnPosition[0],
                              currentSpyLoadout.SpawnPosition[1],currentSpyLoadout.SpawnPosition[2]);
@@ -385,9 +387,9 @@ namespace SpyUtilityNW
         }
 
         private static RevealStatus revealRoleIfNeeded(Player curAttacker, Player curTarget,
-            ISet<Player> curTeamSpyList,
+            ICollection<Player> curTeamSpyList,
             RoleTypeId newRoleToSwapTo,
-            ISet<Player> curEnemyTeamList,
+            ICollection<Player> curEnemyTeamList,
             RoleTypeId newEnemyRoleToSwapTo)
         {
             //If the attacker and target are both spies for same team
@@ -522,12 +524,30 @@ namespace SpyUtilityNW
                     ChangeSpawnInventory(player, SpyUtilityNW.Instance.Config.MtfSpyLoadout, team);
                     break;
             }
+
+;
+            // foreach (var facilityRoom in LightZone.Rooms)
+            // {
+            //     if (facilityRoom.Lights == null)
+            //     {
+            //         Log.Info($"Why is room {facilityRoom} have null lights??");
+            //         continue;
+            //     }
+            //     
+            //     facilityRoom.Lights.LightColor = Color.blue;
+            // }
+            
+            foreach (var allRoomIdentifier in RoomIdentifier.AllRoomIdentifiers)
+            {
+                allRoomIdentifier.ApiRoom.Lights.FlickerLights(5);
+            }
+
             
             return ForceAddSpy(player, team);
         }
         
         /// <summary>
-        /// DESYNC'S THE GAME. DO NOT USE
+        /// No longer desync's the game
         /// </summary>
         /// <param name="player"></param>
         /// <param name="type"></param>
