@@ -125,5 +125,16 @@ namespace SpyUtilityNW
         [Description("MTF Spy loadout.")]
         public MtfSpyBase MtfSpyLoadout { get; set; } = new MtfSpyBase();
 
+        /// <summary>
+        /// How long to delay the respawn role change
+        /// </summary>
+        [Description("How long to delay the respawn role change.")]
+        public float RespawnChangeRoleDelay { get; set; } = 0.5f;
+        
+        /// <summary>
+        /// How long to delay before changing the spy loadout
+        /// </summary>
+        [Description("How long to delay the respawn role change.")]
+        public float RespawnChangeRoleItemsDelay { get; set; } = 0.5f;
     }
 }
