@@ -12,14 +12,14 @@ namespace SpyUtilityNW.Commands
     {
         public string Command { get; } = "SpawnSpy";
 
-        public string[] Aliases { get; } = new string[] { "spy" };
+        public string[] Aliases { get; } = { "spy" };
 
         public string Description { get; } = "Force spawn a Spy";
         
         public static string HelpString = "Please provide the correct syntax:\n" +
-                                         "SPY add (Role) (Player)\n" +
-                                         "SPY remove (Role) (Player)\n" +
-                                         "SPY spawn (Role) (Player) (NewRole)";
+                                         "SPY add (Team) (Player)\n" +
+                                         "SPY remove (Team) (Player)\n" +
+                                         "SPY spawn (Team) (Player) (NewRole)";
 
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
@@ -51,7 +51,7 @@ namespace SpyUtilityNW.Commands
                 response = $"Failed to run command {currentCommand}, player was either null {player == null} or server host";
                 return false;
             }
-            
+            //spy spawn ChaosInsurgency 2 NtfSpecialist
             switch (currentCommand)
             {
                 case "ADD":

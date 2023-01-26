@@ -248,6 +248,7 @@ namespace SpyUtilityNW
 
            
             RevealStatus wasCISpyRevealed = CheckIfCiSpyReveal(attackerTeam, targetTeam, curAttacker, curTarget, currentCISpies, currentMtfSpies);
+            Log.Debug($"wasCISpyRevealed result { wasCISpyRevealed }", SpyUtilityNW.Instance.Config.Debug);
             switch (wasCISpyRevealed)
             {
                 case RevealStatus.AllowNormalDamage:
@@ -262,6 +263,7 @@ namespace SpyUtilityNW
                     return false;
             }
             RevealStatus wasMtfSpyRevealed = CheckIfMtfSpyReveal(attackerTeam, targetTeam, curAttacker, curTarget, currentMtfSpies, currentCISpies);
+            Log.Debug($"wasMtfSpyRevealed result { wasMtfSpyRevealed }", SpyUtilityNW.Instance.Config.Debug);
             switch (wasMtfSpyRevealed)
             {
                 case RevealStatus.AllowNormalDamage:
@@ -403,12 +405,14 @@ namespace SpyUtilityNW
             if ( (curTeamSpyList.Contains(curAttacker) && curEnemyTeamList.Contains(curTarget)) ||
                  (curTeamSpyList.Contains(curTarget) && curEnemyTeamList.Contains(curAttacker)) )
             {
+                
+                Log.Debug($"Both attacker and target were spies {curAttacker.Nickname} and {curTarget.Nickname}", SpyUtilityNW.Instance.Config.Debug);
                 if (curAttacker.ReferenceHub.roleManager.CurrentRole.Team ==
                     curTarget.ReferenceHub.roleManager.CurrentRole.Team)
                 {
+                    Log.Debug($"Both attacker and target were spies but on the same role team, not same spy team. {curAttacker.Nickname} and {curTarget.Nickname}", SpyUtilityNW.Instance.Config.Debug);
                     return RevealStatus.RejectDamage;
                 }
-                Log.Debug($"Both attacker and target were spies {curAttacker.Nickname} and {curTarget.Nickname}", SpyUtilityNW.Instance.Config.Debug);
                 // curAttacker.ReferenceHub.roleManager.ServerSetRole(newRoleToSwapTo, RoleChangeReason.None);
                 RemoveFromSpies(curAttacker);
                 ChangeAppearance(curAttacker, newRoleToSwapTo);
@@ -418,7 +422,7 @@ namespace SpyUtilityNW
                 RemoveFromSpies(curTarget);
                 ChangeAppearance(curTarget, newEnemyRoleToSwapTo);
                 curAttacker.ReceiveHint(SpyUtilityNW.Instance.Config.SpyHasBeenRevealed, SpyUtilityNW.Instance.Config.SpyHasBeenRevealedHintDuration);
-                
+                Log.Debug($"SpiesWereRevealed {curAttacker.Nickname} and {curTarget.Nickname} in both are spies logic", SpyUtilityNW.Instance.Config.Debug);
                 return RevealStatus.SpiesWereRevealed;
             }
             // If the current attacker is spy attacking their "fake teammate", then reveals them.
@@ -431,6 +435,7 @@ namespace SpyUtilityNW
                 curAttacker.ReceiveHint(SpyUtilityNW.Instance.Config.SpyHasBeenRevealed, SpyUtilityNW.Instance.Config.SpyHasBeenRevealedHintDuration);
                 return RevealStatus.SpyWasRevealed;
             }
+            Log.Debug($"RevealRoleIfNeeded allow normal damage: {curAttacker.Nickname} and {curTarget.Nickname}", SpyUtilityNW.Instance.Config.Debug);
             return RevealStatus.AllowNormalDamage;
         }
 
@@ -536,12 +541,6 @@ namespace SpyUtilityNW
             //     
             //     facilityRoom.Lights.LightColor = Color.blue;
             // }
-            
-            foreach (var allRoomIdentifier in RoomIdentifier.AllRoomIdentifiers)
-            {
-                allRoomIdentifier.ApiRoom.Lights.FlickerLights(5);
-            }
-
             
             return ForceAddSpy(player, team);
         }
