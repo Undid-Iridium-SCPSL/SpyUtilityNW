@@ -7,6 +7,7 @@ using HarmonyLib;
 using InventorySystem;
 using InventorySystem.Items;
 using InventorySystem.Items.Firearms;
+using InventorySystem.Items.Firearms.Attachments;
 using MapGeneration;
 using MEC;
 using Mirror;
@@ -136,7 +137,12 @@ namespace SpyUtilityNW
                              var item = potentialSpy.ReferenceHub.inventory.ServerAddItem(playerItem);
                              if (item is Firearm curFireArm)
                              {
-                                 curFireArm.Status = new FirearmStatus(curFireArm.AmmoManagerModule.MaxAmmo, curFireArm.Status.Flags, curFireArm.Status.Attachments);
+                                 if (AttachmentsServerHandler.PlayerPreferences.TryGetValue(potentialSpy.ReferenceHub, out Dictionary<ItemType, uint> data)
+                                     && data.TryGetValue(item.ItemTypeId, out uint num))
+                                 {
+                                     curFireArm.ApplyAttachmentsCode(num, true);
+                                 }
+                                 curFireArm.Status = new FirearmStatus(curFireArm.AmmoManagerModule.MaxAmmo, curFireArm.Status.Flags, curFireArm.GetCurrentAttachmentsCode());
                              }
                          }
                          
