@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using PlayerRoles;
 using PluginAPI.Core.Items;
+using Respawning;
 using UnityEngine;
 
 namespace SpyUtilityNW.Spies
@@ -58,5 +59,7 @@ namespace SpyUtilityNW.Spies
         /// </summary>
         [Description("The real role the spy will be, aka, what they will look like after exposed")]
         public override RoleTypeId SpyRealRole { get; set; } = RoleTypeId.ChaosRifleman;
+
+        public override SpawnableTeamType SpawnTeamType { get; set; } = SpawnableTeamType.NineTailedFox;
     }
 }
