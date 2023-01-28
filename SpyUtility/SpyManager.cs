@@ -230,6 +230,16 @@ namespace SpyUtilityNW
             SpyAttackingTeammate,
             RejectDamage
         }
+
+        [PluginEvent(ServerEventType.RoundEnd)]
+        void onRoundEnd(RoundSummary.LeadingTeam curLeadingTeam)
+        {
+            RoundEndAllowAllDamage = true;
+            RevealAllSpies();
+        }
+
+        private bool RoundEndAllowAllDamage { get; set; }
+
         [PluginEvent(ServerEventType.PlayerDamage)]
         public bool OnPlayerDamage(IPlayer target, IPlayer attacker, DamageHandlerBase damageHandler)
         {
@@ -243,6 +253,11 @@ namespace SpyUtilityNW
             }
 
             if (target == null || attacker == null)
+            {
+                return true;
+            }
+
+            if (RoundEndAllowAllDamage)
             {
                 return true;
             }
@@ -467,6 +482,23 @@ namespace SpyUtilityNW
                 return;
             }
             RemoveFromSpies(target);
+        }
+
+        public void RevealAllSpies()
+        {
+            foreach (Player player in Player.GetPlayers())
+            {
+                if (currentCISpies.Contains(player))
+                {
+                    ChangeAppearance(player, SpyUtilityNW.Instance.Config.CiSpyLoadout.SpyRealRole);
+                }
+                else if (currentMtfSpies.Contains(player))
+                {
+                    ChangeAppearance(player, SpyUtilityNW.Instance.Config.MtfSpyLoadout.SpyRealRole);
+                }
+                RemoveFromSpies(player);
+
+            }
         }
 
         private static void RemoveFromSpies(IPlayer target)
