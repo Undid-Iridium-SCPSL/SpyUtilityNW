@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using PlayerRoles;
+using Respawning;
 using UnityEngine;
 
 namespace SpyUtilityNW.Spies
@@ -16,5 +17,7 @@ namespace SpyUtilityNW.Spies
         public abstract RoleTypeId SpyFakeRole { get; set; }
         
         public abstract RoleTypeId SpyRealRole { get; set; }
+        
+        public abstract SpawnableTeamType SpawnTeamType { get; set; }
     }
 }
