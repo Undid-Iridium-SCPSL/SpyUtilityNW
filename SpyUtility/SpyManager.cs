@@ -164,18 +164,18 @@ namespace SpyUtilityNW
                              // {
                              //     UnitNameMessageHandler.SendNew(currentSpyLoadout.SpawnTeamType, unitNamingRule);
                              // }
-                             // potentialSpy.ReferenceHub.connectionToClient.Send(new UnitNameMessage
-                             // {
-                             //     Data = reader,
-                             //     NamingRule = unitNamingRule,
-                             //     Team = spawnableTeamType
-                             // }, 0);
-                             // Log.Info($" Unit name? {(potentialSpy.ReferenceHub.roleManager.CurrentRole as HumanRole)?.UnitName}");
-                             // potentialSpy.Connection.Send(new UnitNameMessage()
-                             // {
-                             //     UnitName = "blah"
-                             // });
-                             // Log.Info("Send unit name");
+                             // // potentialSpy.ReferenceHub.connectionToClient.Send(new UnitNameMessage
+                             // // {
+                             // //     Data = reader,
+                             // //     NamingRule = unitNamingRule,
+                             // //     Team = spawnableTeamType
+                             // // }, 0);
+                             // // Log.Info($" Unit name? {(potentialSpy.ReferenceHub.roleManager.CurrentRole as HumanRole)?.UnitName}");
+                             // // potentialSpy.Connection.Send(new UnitNameMessage()
+                             // // {
+                             // //     UnitName = "blah"
+                             // // });
+                             // // Log.Info("Send unit name");
                              potentialSpy.PlayerInfo.IsUnitNameHidden = true;
                          });
                      });
