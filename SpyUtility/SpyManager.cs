@@ -114,6 +114,17 @@ namespace SpyUtilityNW
                 default:
                     return;
             }
+
+            if (SpyUtilityNW.Instance.Config.HideAllUnitNamesForRespawningTeam)
+            {
+                Timing.CallDelayed(SpyUtilityNW.Instance.Config.HideAllUnitNamesForRespawningTeamDelay, () =>
+                {
+                    foreach (Player eventRespawningPlayer in respawningEvent.RespawningPlayers)
+                    {
+                        eventRespawningPlayer.PlayerInfo.IsUnitNameHidden = true;
+                    }
+                });
+            }
         }
 
         private static void ChangeSpawnInventory(Player potentialSpy, SpyBase currentSpyLoadout, Team team)
@@ -160,22 +171,6 @@ namespace SpyUtilityNW
 
                          Timing.CallDelayed(.1f, () =>
                          {
-                             // if (UnitNamingRule.TryGetNamingRule(currentSpyLoadout.SpawnTeamType, out UnitNamingRule unitNamingRule))
-                             // {
-                             //     UnitNameMessageHandler.SendNew(currentSpyLoadout.SpawnTeamType, unitNamingRule);
-                             // }
-                             // // potentialSpy.ReferenceHub.connectionToClient.Send(new UnitNameMessage
-                             // // {
-                             // //     Data = reader,
-                             // //     NamingRule = unitNamingRule,
-                             // //     Team = spawnableTeamType
-                             // // }, 0);
-                             // // Log.Info($" Unit name? {(potentialSpy.ReferenceHub.roleManager.CurrentRole as HumanRole)?.UnitName}");
-                             // // potentialSpy.Connection.Send(new UnitNameMessage()
-                             // // {
-                             // //     UnitName = "blah"
-                             // // });
-                             // // Log.Info("Send unit name");
                              potentialSpy.PlayerInfo.IsUnitNameHidden = true;
                          });
                      });
@@ -580,16 +575,14 @@ namespace SpyUtilityNW
             {
                 case Team.ChaosInsurgency:
                     Log.Debug($"Force Changing appearance to {newRoleID}", SpyUtilityNW.Instance.Config.Debug);
-                    // ChangeAppearance(player, RoleTypeId.NtfSergeant);
                     ChangeSpawnInventory(player, SpyUtilityNW.Instance.Config.CiSpyLoadout, team);
                     break;
                 case Team.FoundationForces:
                     Log.Debug($"Force Changing appearance to {newRoleID}", SpyUtilityNW.Instance.Config.Debug);
-                    // ChangeAppearance(player, RoleTypeId.ChaosRifleman);
                     ChangeSpawnInventory(player, SpyUtilityNW.Instance.Config.MtfSpyLoadout, team);
                     break;
             }
-
+            
             return ForceAddSpy(player, team);
         }
         
