@@ -160,5 +160,8 @@ namespace SpyUtilityNW
         /// </summary>
         [Description("Hide the unit names for spies.")]
         public bool HideAllUnitNamesForSpies { get; set; } = false;
+
+        public float ExtraChangeAppearanceDelay { get; set; } = 1f;
+        public bool ExtraChangeAppearance { get; set; } = false;
     }
 }

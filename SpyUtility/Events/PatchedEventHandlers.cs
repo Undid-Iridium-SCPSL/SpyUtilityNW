@@ -14,5 +14,13 @@ namespace SpyUtilityNW.Events
         {
             BeforeTeamRespawn?.Invoke(curEvent);
         }
+        
+        public delegate void FlashBang(FlashBangEvent flashBangEvent);
+        public static event FlashBang FlashbangProcessing;
+
+        public static void FlashbangEventProcessing(FlashBangEvent flashBangEvent)
+        {
+            FlashbangProcessing?.Invoke(flashBangEvent);
+        }
     }
 }

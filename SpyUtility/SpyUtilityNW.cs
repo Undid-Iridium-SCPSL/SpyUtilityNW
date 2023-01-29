@@ -34,6 +34,7 @@ namespace SpyUtilityNW
                 PluginAPI.Events.EventManager.RegisterEvents(this);
                 PluginAPI.Events.EventManager.RegisterEvents<SpyManager>(this);
                 PatchedEventHandlers.BeforeTeamRespawn += SpyManager.OnWaveSpawn;
+                PatchedEventHandlers.FlashbangProcessing += SpyManager.OnFlashBang;
                 
                 Log.Debug("We have started our plugin SpyUtilityNW!!", SpyUtilityNW.Instance.Config.Debug);
             }

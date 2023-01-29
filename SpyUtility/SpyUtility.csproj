@@ -10,7 +10,7 @@
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <RootNamespace>CISpyUtility</RootNamespace>
+        <RootNamespace>SpyUtilityNW</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
