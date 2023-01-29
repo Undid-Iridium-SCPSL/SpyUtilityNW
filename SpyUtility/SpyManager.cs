@@ -114,6 +114,17 @@ namespace SpyUtilityNW
                 default:
                     return;
             }
+
+            if (SpyUtilityNW.Instance.Config.HideAllUnitNamesForRespawningTeam)
+            {
+                Timing.CallDelayed(SpyUtilityNW.Instance.Config.HideAllUnitNamesForRespawningTeamDelay, () =>
+                {
+                    foreach (Player eventRespawningPlayer in respawningEvent.RespawningPlayers)
+                    {
+                        eventRespawningPlayer.PlayerInfo.IsUnitNameHidden = true;
+                    }
+                });
+            }
         }
 
         private static void ChangeSpawnInventory(Player potentialSpy, SpyBase currentSpyLoadout, Team team)
@@ -158,26 +169,10 @@ namespace SpyUtilityNW
                          potentialSpy.ReceiveHint(newSpyMessage,
                              SpyUtilityNW.Instance.Config.OnSpySpawnMessageHintDuration);
 
-                         Timing.CallDelayed(.1f, () =>
+                         if (SpyUtilityNW.Instance.Config.HideAllUnitNamesForSpies)
                          {
-                             // if (UnitNamingRule.TryGetNamingRule(currentSpyLoadout.SpawnTeamType, out UnitNamingRule unitNamingRule))
-                             // {
-                             //     UnitNameMessageHandler.SendNew(currentSpyLoadout.SpawnTeamType, unitNamingRule);
-                             // }
-                             // // potentialSpy.ReferenceHub.connectionToClient.Send(new UnitNameMessage
-                             // // {
-                             // //     Data = reader,
-                             // //     NamingRule = unitNamingRule,
-                             // //     Team = spawnableTeamType
-                             // // }, 0);
-                             // // Log.Info($" Unit name? {(potentialSpy.ReferenceHub.roleManager.CurrentRole as HumanRole)?.UnitName}");
-                             // // potentialSpy.Connection.Send(new UnitNameMessage()
-                             // // {
-                             // //     UnitName = "blah"
-                             // // });
-                             // // Log.Info("Send unit name");
-                             potentialSpy.PlayerInfo.IsUnitNameHidden = true;
-                         });
+                             Timing.CallDelayed(.1f, () => { potentialSpy.PlayerInfo.IsUnitNameHidden = true; });
+                         }
                      });
                  });
              });
@@ -252,6 +247,16 @@ namespace SpyUtilityNW
             SpyAttackingTeammate,
             RejectDamage
         }
+
+        [PluginEvent(ServerEventType.RoundEnd)]
+        void onRoundEnd(RoundSummary.LeadingTeam curLeadingTeam)
+        {
+            RoundEndAllowAllDamage = true;
+            RevealAllSpies();
+        }
+
+        private bool RoundEndAllowAllDamage { get; set; }
+
         [PluginEvent(ServerEventType.PlayerDamage)]
         public bool OnPlayerDamage(IPlayer target, IPlayer attacker, DamageHandlerBase damageHandler)
         {
@@ -265,6 +270,11 @@ namespace SpyUtilityNW
             }
 
             if (target == null || attacker == null)
+            {
+                return true;
+            }
+
+            if (RoundEndAllowAllDamage)
             {
                 return true;
             }
@@ -491,6 +501,23 @@ namespace SpyUtilityNW
             RemoveFromSpies(target);
         }
 
+        public void RevealAllSpies()
+        {
+            foreach (Player player in Player.GetPlayers())
+            {
+                if (currentCISpies.Contains(player))
+                {
+                    ChangeAppearance(player, SpyUtilityNW.Instance.Config.CiSpyLoadout.SpyRealRole);
+                }
+                else if (currentMtfSpies.Contains(player))
+                {
+                    ChangeAppearance(player, SpyUtilityNW.Instance.Config.MtfSpyLoadout.SpyRealRole);
+                }
+                RemoveFromSpies(player);
+
+            }
+        }
+
         private static void RemoveFromSpies(IPlayer target)
         {
             Player potentialSpy = Player.Get(target.ReferenceHub.netId);
@@ -548,16 +575,14 @@ namespace SpyUtilityNW
             {
                 case Team.ChaosInsurgency:
                     Log.Debug($"Force Changing appearance to {newRoleID}", SpyUtilityNW.Instance.Config.Debug);
-                    // ChangeAppearance(player, RoleTypeId.NtfSergeant);
                     ChangeSpawnInventory(player, SpyUtilityNW.Instance.Config.CiSpyLoadout, team);
                     break;
                 case Team.FoundationForces:
                     Log.Debug($"Force Changing appearance to {newRoleID}", SpyUtilityNW.Instance.Config.Debug);
-                    // ChangeAppearance(player, RoleTypeId.ChaosRifleman);
                     ChangeSpawnInventory(player, SpyUtilityNW.Instance.Config.MtfSpyLoadout, team);
                     break;
             }
-
+            
             return ForceAddSpy(player, team);
         }
         

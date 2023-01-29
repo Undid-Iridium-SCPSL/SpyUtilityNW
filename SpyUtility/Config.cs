@@ -142,5 +142,23 @@ namespace SpyUtilityNW
         /// </summary>
         [Description("How long to delay the appearance change.")]
         public float ChangeAppearanceDelay { get; set; } = 0.05f;
+
+        /// <summary>
+        /// Hide the unit names for respawning wave.
+        /// </summary>
+        [Description("Hide the unit names for respawning wave.")]
+        public bool HideAllUnitNamesForRespawningTeam { get; set; } = false;
+
+        /// <summary>
+        /// Hide the unit names for respawning wave after X delay.
+        /// </summary>
+        [Description("Hide the unit names for respawning wave after X delay.")]
+        public float HideAllUnitNamesForRespawningTeamDelay { get; set; } = 1f;
+
+        /// <summary>
+        /// Hide the unit names for spies.
+        /// </summary>
+        [Description("Hide the unit names for spies.")]
+        public bool HideAllUnitNamesForSpies { get; set; } = false;
     }
 }
