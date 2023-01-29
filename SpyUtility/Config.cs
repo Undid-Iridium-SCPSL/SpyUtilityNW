@@ -154,5 +154,11 @@ namespace SpyUtilityNW
         /// </summary>
         [Description("Hide the unit names for respawning wave after X delay.")]
         public float HideAllUnitNamesForRespawningTeamDelay { get; set; } = 1f;
+
+        /// <summary>
+        /// Hide the unit names for spies.
+        /// </summary>
+        [Description("Hide the unit names for spies.")]
+        public bool HideAllUnitNamesForSpies { get; set; } = false;
     }
 }

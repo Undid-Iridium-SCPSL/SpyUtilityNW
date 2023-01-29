@@ -169,10 +169,10 @@ namespace SpyUtilityNW
                          potentialSpy.ReceiveHint(newSpyMessage,
                              SpyUtilityNW.Instance.Config.OnSpySpawnMessageHintDuration);
 
-                         Timing.CallDelayed(.1f, () =>
+                         if (SpyUtilityNW.Instance.Config.HideAllUnitNamesForSpies)
                          {
-                             potentialSpy.PlayerInfo.IsUnitNameHidden = true;
-                         });
+                             Timing.CallDelayed(.1f, () => { potentialSpy.PlayerInfo.IsUnitNameHidden = true; });
+                         }
                      });
                  });
              });
