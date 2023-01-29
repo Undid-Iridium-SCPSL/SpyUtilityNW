@@ -172,12 +172,12 @@ namespace SpyUtilityNW
         /// </summary>
         [Description("Adds an extra change appearance.")]
         public bool ExtraChangeAppearance { get; set; } = false;
-        
+
         /// <summary>
         /// Adds GuardSpies.
         /// </summary>
         [Description("Adds GuardSpies.")]
-        public bool GuardSpies { get; set; }
+        public bool GuardSpies { get; set; } = false;
         
         /// <summary>
         /// Probability of spawning a Guard spy per spy.

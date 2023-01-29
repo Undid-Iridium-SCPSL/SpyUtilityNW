@@ -22,7 +22,7 @@ namespace SpyUtilityNW.Spies
             ItemType.GrenadeHE,
             ItemType.Medkit,
             ItemType.Adrenaline,
-            ItemType.GunLogicer,
+            ItemType.GunCrossvec,
             ItemType.KeycardNTFOfficer,
         };
 

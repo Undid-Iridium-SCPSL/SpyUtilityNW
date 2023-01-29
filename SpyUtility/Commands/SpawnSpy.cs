@@ -37,7 +37,15 @@ namespace SpyUtilityNW.Commands
 
             String currentCommand = arguments.At(0).ToUpper();
             PlayerCommandSender commandSender = sender as PlayerCommandSender;
-            Team.TryParse(arguments.At(1), out Team curTeam);
+            Utility.CustomTeams currentCustomTeam = Utility.CustomTeams.None;
+            if (Team.TryParse(arguments.At(1), out Team curTeam))
+            {
+                currentCustomTeam = ConvertTeamtoTeam(curTeam);
+            }
+            else if (Utility.CustomTeams.TryParse(arguments.At(1), out Utility.CustomTeams curCustomTeam))
+            {
+                currentCustomTeam = curCustomTeam;
+            }
             Player player = arguments.Count is >= 3 ? Player.Get(int.Parse(arguments.At(2))) : Player.Get(commandSender.PlayerId);
             RoleTypeId newRoleToSpawn = RoleTypeId.None;
             if (arguments.Count >= 4)
@@ -55,18 +63,18 @@ namespace SpyUtilityNW.Commands
             switch (currentCommand)
             {
                 case "ADD":
-                    return AddSpy(out response, curTeam, player);
+                    return AddSpy(out response, currentCustomTeam, player);
                 case "REMOVE":
-                    return RemoveSpy(out response, curTeam, player);
+                    return RemoveSpy(out response, currentCustomTeam, player);
                 case "SPAWN":
-                    return CreateSpy(out response, curTeam, player, newRoleToSpawn);
+                    return CreateSpy(out response, currentCustomTeam, player, newRoleToSpawn);
             }
             
             response = $"Failed to run command {currentCommand}";
             return false;
         }
 
-        private bool CreateSpy(out string response, Team curTeam, Player player, RoleTypeId newRole)
+        private bool CreateSpy(out string response, Utility.CustomTeams curTeam, Player player, RoleTypeId newRole)
         {
             Log.Debug($" CreateSpy player {player.Nickname}, curTeam {curTeam}", SpyUtilityNW.Instance.Config.Debug);
             if (SpyManager.ForceCreateSpy(player, team: curTeam, newRole))
@@ -80,7 +88,7 @@ namespace SpyUtilityNW.Commands
         }
 
 
-        private bool RemoveSpy(out string response, Team curTeam, Player player)
+        private bool RemoveSpy(out string response, Utility.CustomTeams curTeam, Player player)
         {
             Log.Debug($" RemoveSpy Player, {player}, curTeam {curTeam}", SpyUtilityNW.Instance.Config.Debug);
             SpyManager.ForceRemoveSpy(player, team: curTeam);
@@ -88,10 +96,24 @@ namespace SpyUtilityNW.Commands
             return true;
         }
 
-        private bool AddSpy(out string response, Team curTeam, Player player)
+        public Utility.CustomTeams ConvertTeamtoTeam(Team team)
+        {
+            switch (team)
+            {
+                case Team.ChaosInsurgency:
+                    return Utility.CustomTeams.Chaos;
+                case Team.FoundationForces:
+                    return Utility.CustomTeams.Mtf;
+            }
+
+            return Utility.CustomTeams.None;
+        }
+
+        private bool AddSpy(out string response, Utility.CustomTeams curTeam, Player player)
         {
             Log.Debug($" AddSpy player {player}, curTeam {curTeam}", SpyUtilityNW.Instance.Config.Debug);
-            if (SpyManager.ForceAddSpy(player, team: curTeam))
+            // Utility.CustomTeams curCustomTeam = ConvertTeamtoTeam(curTeam);
+            if (SpyManager.ForceAddSpy(player, curTeam))
             {
                 response = "Success in creating new spy";
                 return true;

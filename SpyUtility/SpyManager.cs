@@ -37,6 +37,9 @@ namespace SpyUtilityNW
             Log.Debug("This spawned right", SpyUtilityNW.Instance.Config.Debug);
         }
 
+        /// <summary>
+        /// TODO Actually implement and use this
+        /// </summary>
         public static IDictionary<Utility.CustomTeams, ISet<Player>> AllCurrentSpies { get; set; } =
             new Dictionary<Utility.CustomTeams, ISet<Player>>
             {
@@ -99,12 +102,12 @@ namespace SpyUtilityNW
                             }
                         } 
                     
-                        TryToAddSpies(potentialSpies, new TeamRespawnEvent(initialPlayers, SpawnableTeamType.None), totalPlayers, howManyGuardCISpies);
+                        TryToAddSpies(potentialSpies, new TeamRespawnEvent(initialPlayers, SpawnableTeamType.None), totalPlayers, howManyGuardCISpies, AllCurrentSpies[Utility.CustomTeams.Guards]);
                         foreach (Player potentialSpy in potentialSpies)
                         {
                             if (CurrentCiSpies.Add(potentialSpy))
                             {
-                                ChangeSpawnInventory(potentialSpy, SpyUtilityNW.Instance.Config.GuardSpyLoadout, Team.ChaosInsurgency);
+                                ChangeSpawnInventory(potentialSpy, SpyUtilityNW.Instance.Config.GuardSpyLoadout, Utility.CustomTeams.Chaos);
                             }
                         }
                         break;
@@ -185,12 +188,12 @@ namespace SpyUtilityNW
                         }
                     } 
                 
-                    TryToAddSpies(potentialSpies, respawningEvent, totalPlayers, howManyMtfSpies);
+                    TryToAddSpies(potentialSpies, respawningEvent, totalPlayers, howManyMtfSpies, CurrentMtfSpies);
                     foreach (Player potentialSpy in potentialSpies)
                     {
                          if (CurrentMtfSpies.Add(potentialSpy))
                          {
-                             ChangeSpawnInventory(potentialSpy, SpyUtilityNW.Instance.Config.MtfSpyLoadout, Team.FoundationForces);
+                             ChangeSpawnInventory(potentialSpy, SpyUtilityNW.Instance.Config.MtfSpyLoadout, Utility.CustomTeams.Mtf);
                          }
                     }
                     break;
@@ -207,13 +210,13 @@ namespace SpyUtilityNW
                             howManyCiSpies++;
                         }
                     } 
-                    TryToAddSpies(potentialSpies, respawningEvent, totalPlayers, howManyCiSpies);
+                    TryToAddSpies(potentialSpies, respawningEvent, totalPlayers, howManyCiSpies, CurrentCiSpies);
                     // Technically this can be reduced in TryToAddSpies to just add to static but I feel that is not safe.
                     foreach (Player potentialSpy in potentialSpies)
                     {
                         if (CurrentCiSpies.Add(potentialSpy))
                         {
-                            ChangeSpawnInventory(potentialSpy, SpyUtilityNW.Instance.Config.CiSpyLoadout, Team.ChaosInsurgency);
+                            ChangeSpawnInventory(potentialSpy, SpyUtilityNW.Instance.Config.CiSpyLoadout, Utility.CustomTeams.Chaos);
                         }
                     }
 
@@ -237,7 +240,7 @@ namespace SpyUtilityNW
             }
         }
 
-        private static void ChangeSpawnInventory(Player potentialSpy, SpyBase currentSpyLoadout, Team team)
+        private static void ChangeSpawnInventory(Player potentialSpy, SpyBase currentSpyLoadout, Utility.CustomTeams argTeam)
         {
              Timing.CallDelayed(SpyUtilityNW.Instance.Config.RespawnChangeRoleDelay, () => {
                  var potentialSpyPosition = potentialSpy.Position;
@@ -275,7 +278,7 @@ namespace SpyUtilityNW
                          potentialSpy.ReferenceHub.inventory.SendItemsNextFrame = true;
                          ChangeAppearance(potentialSpy, currentSpyLoadout.SpyFakeRole);
                          var newSpyMessage = string.Format(SpyUtilityNW.Instance.Config.OnSpySpawnMessage,
-                             team);
+                             argTeam);
                          potentialSpy.ReceiveHint(newSpyMessage,
                              SpyUtilityNW.Instance.Config.OnSpySpawnMessageHintDuration);
 
@@ -304,7 +307,7 @@ namespace SpyUtilityNW
         /// <param name="totalPlayers">Amount of players available</param>
         /// <param name="howManySpies">How many spies to create, if possible</param>
         private static void TryToAddSpies(ISet<Player> players, TeamRespawnEvent respawningEvent,
-            int totalPlayers, int howManySpies)
+            int totalPlayers, int howManySpies, ISet<Player> spyDictionary)
         {
             for (var pos = 0; pos < howManySpies; pos++)
             {
@@ -315,7 +318,7 @@ namespace SpyUtilityNW
                     respawningEvent.RespawningPlayers.ElementAt(Random.Range(0, totalPlayers));
                 
                 Log.Debug($"Found potential spy {curPlayerToMakeSpy.Nickname}", SpyUtilityNW.Instance.Config.Debug);
-                while (players.Contains(curPlayerToMakeSpy) || CurrentCiSpies.Contains(curPlayerToMakeSpy))
+                while (players.Contains(curPlayerToMakeSpy) || spyDictionary.Contains(curPlayerToMakeSpy))
                 {
                     if (attempt >= 3)
                     {
@@ -345,14 +348,15 @@ namespace SpyUtilityNW
         /// <param name="player"></param>
         /// <param name="team"></param>
         /// <returns></returns>
-        public static bool ForceAddSpy(Player player, Team team)
+        public static bool ForceAddSpy(Player player, Utility.CustomTeams team)
         {
             switch (team)
             {
-                case Team.ChaosInsurgency:
+                case Utility.CustomTeams.Chaos:
+                case Utility.CustomTeams.Guards:
                     CurrentCiSpies.Add(player);
                     break;
-                case Team.FoundationForces:
+                case Utility.CustomTeams.Mtf:
                     CurrentMtfSpies.Add(player);
                     break;
                 default:
@@ -734,15 +738,16 @@ namespace SpyUtilityNW
             CurrentMtfSpies.Remove(potentialSpy);
         }
         
-        private static void RemoveFromSpies(IPlayer target, Team team)
+        private static void RemoveFromSpies(IPlayer target, Utility.CustomTeams team)
         {
             Player potentialSpy = Player.Get(target.ReferenceHub.netId);
             switch (team)
             {
-                case Team.ChaosInsurgency:
+                case Utility.CustomTeams.Chaos:
+                case Utility.CustomTeams.Guards:
                     CurrentCiSpies.Remove(potentialSpy);
                     break;
-                case Team.FoundationForces:
+                case Utility.CustomTeams.Mtf:
                     CurrentMtfSpies.Remove(potentialSpy);
                     break;
             }
@@ -764,7 +769,7 @@ namespace SpyUtilityNW
         /// </summary>
         /// <param name="player"></param>
         /// <param name="team"></param>
-        public static void ForceRemoveSpy(Player player, Team team)
+        public static void ForceRemoveSpy(Player player, Utility.CustomTeams team)
         {
             RemoveFromSpies(player, team);
         }
@@ -776,15 +781,15 @@ namespace SpyUtilityNW
         /// <param name="team"></param>
         /// <param name="newRoleID"></param>
         /// <returns></returns>
-        public static bool ForceCreateSpy(Player player, Team team, RoleTypeId newRoleID = RoleTypeId.None)
+        public static bool ForceCreateSpy(Player player, Utility.CustomTeams team, RoleTypeId newRoleID = RoleTypeId.None)
         {
             RemoveFromSpies(player);
             if (newRoleID is RoleTypeId.None)
             {
                 newRoleID = team switch
                 {
-                    Team.ChaosInsurgency => RoleTypeId.ChaosRifleman,
-                    Team.FoundationForces => RoleTypeId.NtfSergeant,
+                    Utility.CustomTeams.Chaos => RoleTypeId.ChaosRifleman,
+                    Utility.CustomTeams.Mtf => RoleTypeId.NtfSergeant,
                     _ => newRoleID
                 };
             }
@@ -795,13 +800,17 @@ namespace SpyUtilityNW
             Log.Debug($"Settings role {newRoleID} for player {player.Nickname}, on team {team}", SpyUtilityNW.Instance.Config.Debug);
             switch (team)
             {
-                case Team.ChaosInsurgency:
+                case Utility.CustomTeams.Chaos:
                     Log.Debug($"Force Changing appearance to {newRoleID}", SpyUtilityNW.Instance.Config.Debug);
                     ChangeSpawnInventory(player, SpyUtilityNW.Instance.Config.CiSpyLoadout, team);
                     break;
-                case Team.FoundationForces:
+                case Utility.CustomTeams.Mtf:
                     Log.Debug($"Force Changing appearance to {newRoleID}", SpyUtilityNW.Instance.Config.Debug);
                     ChangeSpawnInventory(player, SpyUtilityNW.Instance.Config.MtfSpyLoadout, team);
+                    break;
+                case Utility.CustomTeams.Guards:
+                    Log.Debug($"Force Changing appearance to {newRoleID}", SpyUtilityNW.Instance.Config.Debug);
+                    ChangeSpawnInventory(player, SpyUtilityNW.Instance.Config.GuardSpyLoadout, team);
                     break;
             }
             
