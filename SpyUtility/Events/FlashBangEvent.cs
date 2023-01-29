@@ -10,8 +10,6 @@ namespace SpyUtilityNW.Events
     /// </summary>
     public class FlashBangEvent : EventArgs
     {
-        public SpawnableTeamType SpawningTeam { get; }
-
         public FlashBangEvent(ReferenceHub attacker, ReferenceHub target)
         {
             Attacker = attacker;

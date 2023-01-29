@@ -22,5 +22,13 @@ namespace SpyUtilityNW.Events
         {
             FlashbangProcessing?.Invoke(flashBangEvent);
         }
+        
+        public delegate void InitialWaveSpawnEvent(InitalWaveSpawnEvent flashBangEvent);
+        public static event InitialWaveSpawnEvent InitialWaveSpawn;
+
+        public static void InitalWavePlayersEvent(InitalWaveSpawnEvent initialWaveSpawnEvent)
+        {
+            InitialWaveSpawn?.Invoke(initialWaveSpawnEvent);
+        }
     }
 }

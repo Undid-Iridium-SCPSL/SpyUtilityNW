@@ -7,7 +7,7 @@ namespace SpyUtilityNW
     public class Config
     {
         /// <summary>
-        /// ah
+        /// Probability of spawning a CI spy per spy.
         /// </summary>
         [Description("Probability of spawning a CI spy per spy.")]
         public Dictionary<int, float> probabilityOfCISpy { get; set; } = new()
@@ -18,7 +18,7 @@ namespace SpyUtilityNW
         };
 
         /// <summary>
-        /// ah
+        /// Probability of spawning a Mtf spy per spy.
         /// </summary>
         [Description("Probability of spawning a Mtf spy per spy.")]
         public Dictionary<int, float> probabilityOfMtfSpy { get; set; } = new()
@@ -161,7 +161,51 @@ namespace SpyUtilityNW
         [Description("Hide the unit names for spies.")]
         public bool HideAllUnitNamesForSpies { get; set; } = false;
 
+        /// <summary>
+        /// Adds an extra change appearance delay.
+        /// </summary>
+        [Description("Adds an extra change appearance delay.")]
         public float ExtraChangeAppearanceDelay { get; set; } = 1f;
+        
+        /// <summary>
+        /// Adds an extra change appearance.
+        /// </summary>
+        [Description("Adds an extra change appearance.")]
         public bool ExtraChangeAppearance { get; set; } = false;
+        
+        /// <summary>
+        /// Adds GuardSpies.
+        /// </summary>
+        [Description("Adds GuardSpies.")]
+        public bool GuardSpies { get; set; }
+        
+        /// <summary>
+        /// Probability of spawning a Guard spy per spy.
+        /// </summary>
+        [Description("Probability of spawning a Guard spy per spy")]
+        public Dictionary<int, float> probabilityOfGuardSpy { get; set; } = new()
+        {
+            {1, 30f},
+            {2, 10f},
+            {3, 5f}
+        };
+
+        /// <summary>
+        /// Guard Spy loadout <see cref="GuardSpyBase"/>
+        /// </summary>
+        [Description("GuardSpyBase Spy loadout.")]
+        public GuardSpyBase GuardSpyLoadout { get; set; } = new();
+
+        /// <summary>
+        /// Minimum required players in order for spies to occur.
+        /// </summary>
+        [Description("Minimum required players in order for spies to occur.")]
+        public int MinimumPlayers { get; set; } = 5;
+
+        /// <summary>
+        /// Whether to check if cuff actions reveal spies.
+        /// </summary>
+        [Description("Whether to check if cuff actions reveal spies.")]
+        public bool RevealOnCuffActions { get; set; } = false;
     }
 }

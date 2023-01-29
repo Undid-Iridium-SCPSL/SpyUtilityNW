@@ -37,6 +37,14 @@ namespace SpyUtilityNW
             Log.Debug("This spawned right", SpyUtilityNW.Instance.Config.Debug);
         }
 
+        public static IDictionary<Utility.CustomTeams, ISet<Player>> AllCurrentSpies { get; set; } =
+            new Dictionary<Utility.CustomTeams, ISet<Player>>
+            {
+                { Utility.CustomTeams.Chaos, CurrentMtfSpies },
+                { Utility.CustomTeams.Mtf, CurrentMtfSpies },
+                { Utility.CustomTeams.Guards, new HashSet<Player>() }
+            };
+
         /// <summary>
         /// All current CI spies
         /// </summary>
@@ -54,6 +62,96 @@ namespace SpyUtilityNW
         /// Handles TeamRspawn for CISpy
         /// </summary>
         /// <param name="respawningEvent"></param>
+        
+        public void OnWaveSpawn(InitalWaveSpawnEvent initalWaveSpawnEvent)
+        {
+            Log.Debug(
+                $"InitialWaveSpawnEvent OnWaveSpawn", SpyUtilityNW.Instance.Config.Debug);
+            HashSet<Player> potentialSpies = new HashSet<Player>();
+            List<ReferenceHub> initialPlayers = initalWaveSpawnEvent.InitalWavePlayers[RoleTypeId.FacilityGuard];
+            int totalPlayers = initialPlayers.Count;
+
+            if (totalPlayers < 1)
+            {
+                return;
+            }
+            
+            if (SpyUtilityNW.Instance.Config.MinimumPlayers > initialPlayers.Count)
+            {
+                return;
+            }
+            
+            // For the future, maybe
+            foreach (RoleTypeId roleTypeId in initalWaveSpawnEvent.rolesAdded)
+            {
+                switch (roleTypeId)
+                {
+                    case RoleTypeId.FacilityGuard:
+                    {
+                        var howManyGuardCISpies = 0;
+                        foreach (var keyValuePair in PluginInstance.Config.probabilityOfGuardSpy)
+                        {
+                            Log.Debug($"Probability of guard ci spy {keyValuePair.Key} and {keyValuePair.Value}", SpyUtilityNW.Instance.Config.Debug);
+                            if (Random.Range(0, 100) < keyValuePair.Value)
+                            {
+                                Log.Debug($"Probability of guard ci spy was lucky, adding spy {howManyGuardCISpies}", SpyUtilityNW.Instance.Config.Debug);
+                                howManyGuardCISpies++;
+                            }
+                        } 
+                    
+                        TryToAddSpies(potentialSpies, new TeamRespawnEvent(initialPlayers, SpawnableTeamType.None), totalPlayers, howManyGuardCISpies);
+                        foreach (Player potentialSpy in potentialSpies)
+                        {
+                            if (CurrentCiSpies.Add(potentialSpy))
+                            {
+                                ChangeSpawnInventory(potentialSpy, SpyUtilityNW.Instance.Config.GuardSpyLoadout, Team.ChaosInsurgency);
+                            }
+                        }
+                        break;
+                    }
+                    case RoleTypeId.None:
+                    case RoleTypeId.Scp173:
+                    case RoleTypeId.ClassD:
+                    case RoleTypeId.Spectator:
+                    case RoleTypeId.Scp106:
+                    case RoleTypeId.NtfSpecialist:
+                    case RoleTypeId.Scp049:
+                    case RoleTypeId.Scientist:
+                    case RoleTypeId.Scp079:
+                    case RoleTypeId.ChaosConscript:
+                    case RoleTypeId.Scp096:
+                    case RoleTypeId.Scp0492:
+                    case RoleTypeId.NtfSergeant:
+                    case RoleTypeId.NtfCaptain:
+                    case RoleTypeId.NtfPrivate:
+                    case RoleTypeId.Tutorial:
+                    case RoleTypeId.Scp939:
+                    case RoleTypeId.CustomRole:
+                    case RoleTypeId.ChaosRifleman:
+                    case RoleTypeId.ChaosRepressor:
+                    case RoleTypeId.ChaosMarauder:
+                    case RoleTypeId.Overwatch:
+                    default:
+                        return;
+                }
+            }
+            
+
+            if (SpyUtilityNW.Instance.Config.HideAllUnitNamesForRespawningTeam)
+            {
+                Timing.CallDelayed(SpyUtilityNW.Instance.Config.HideAllUnitNamesForRespawningTeamDelay, () =>
+                {
+                    foreach (ReferenceHub eventRespawningPlayer in initialPlayers)
+                    {
+                        Player.Get(eventRespawningPlayer).PlayerInfo.IsUnitNameHidden = true;
+                    }
+                });
+            }
+        }
+        /// <summary>
+        /// Handles TeamRespawn for CISpy/Mtf spy
+        /// </summary>
+        /// <param name="respawningEvent"></param>
         public void OnWaveSpawn(TeamRespawnEvent respawningEvent)
         {
             Log.Debug(
@@ -63,6 +161,11 @@ namespace SpyUtilityNW
             int totalPlayers = respawningEvent.RespawningPlayers.Count;
 
             if (respawningEvent.RespawningPlayers.Count < 1)
+            {
+                return;
+            }
+
+            if (SpyUtilityNW.Instance.Config.MinimumPlayers > respawningEvent.RespawningPlayers.Count)
             {
                 return;
             }
@@ -297,6 +400,29 @@ namespace SpyUtilityNW
         {
             RoundEndAllowAllDamage = true;
             RevealAllSpies();
+            AllCurrentSpies.Clear();
+        }
+        
+        [PluginEvent(ServerEventType.PlayerHandcuff)]
+        [UsedImplicitly]
+        void OnCuffing(IPlayer PlayerCuffing, IPlayer PlayerGettingCuffed)
+        {
+            if (SpyUtilityNW.Instance.Config.RevealOnCuffActions)
+            {
+                Log.Debug($"OnCuffing, prior to calling OnPlayerDamage.", SpyUtilityNW.Instance.Config.Debug);
+                OnPlayerDamage(PlayerCuffing, PlayerGettingCuffed, null);
+            }
+        }
+        
+        [PluginEvent(ServerEventType.PlayerRemoveHandcuffs)]
+        [UsedImplicitly]
+        void OnRemovingCuff(IPlayer PlayerCuffing, IPlayer PlayerGettingCuffed)
+        {
+            if (SpyUtilityNW.Instance.Config.RevealOnCuffActions)
+            {
+                Log.Debug($"OnRemovingCuff, prior to calling OnPlayerDamage.", SpyUtilityNW.Instance.Config.Debug);
+                OnPlayerDamage(PlayerCuffing, PlayerGettingCuffed, null);
+            }
         }
 
         private bool RoundEndAllowAllDamage { get; set; }
@@ -707,5 +833,7 @@ namespace SpyUtilityNW
         {
             OnPlayerDamage(Player.Get(flashEvent.Attacker), Player.Get(flashEvent.Attacker), null);
         }
+
     }
+
 }
