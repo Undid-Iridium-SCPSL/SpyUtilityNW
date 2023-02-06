@@ -207,5 +207,11 @@ namespace SpyUtilityNW
         /// </summary>
         [Description("Whether to check if cuff actions reveal spies.")]
         public bool RevealOnCuffActions { get; set; } = false;
+        
+        /// <summary>
+        /// Whether to check if cuff actions reveal spies.
+        /// </summary>
+        [Description("Whether to check if solo spy causes reveal.")]
+        public bool RevealIfSolo { get; set; } = false;
     }
 }

@@ -15,6 +15,7 @@ using PluginAPI.Enums;
 using SpyUtilityNW.Events;
 using SpyUtilityNW.Spies;
 using UnityEngine;
+using Utils.NonAllocLINQ;
 using Random = UnityEngine.Random;
 
 namespace SpyUtilityNW
@@ -30,8 +31,6 @@ namespace SpyUtilityNW
         /// </summary>
         public SpyManager()
         {
-            CurrentCiSpies = new HashSet<Player>();
-            CurrentMtfSpies = new HashSet<Player>();
             SpyUtilityNW.Instance.SpyManager = this;
             PluginInstance = SpyUtilityNW.Instance;
             Log.Debug("This spawned right", SpyUtilityNW.Instance.Config.Debug);
@@ -43,21 +42,10 @@ namespace SpyUtilityNW
         public static IDictionary<Utility.CustomTeams, ISet<Player>> AllCurrentSpies { get; set; } =
             new Dictionary<Utility.CustomTeams, ISet<Player>>
             {
-                { Utility.CustomTeams.Chaos, CurrentMtfSpies },
-                { Utility.CustomTeams.Mtf, CurrentMtfSpies },
+                { Utility.CustomTeams.Chaos, new HashSet<Player>() },
+                { Utility.CustomTeams.Mtf,  new HashSet<Player>() },
                 { Utility.CustomTeams.Guards, new HashSet<Player>() }
             };
-
-        /// <summary>
-        /// All current CI spies
-        /// </summary>
-        // ReSharper disable once MemberCanBePrivate.Global
-        public static ISet<Player> CurrentCiSpies = new HashSet<Player>();
-        /// <summary>
-        ///  All current MTF spies.
-        /// </summary>
-        // ReSharper disable once MemberCanBePrivate.Global
-        public static ISet<Player> CurrentMtfSpies = new HashSet<Player>();
         
         private SpyUtilityNW PluginInstance { get; set; }
 
@@ -105,9 +93,10 @@ namespace SpyUtilityNW
                         TryToAddSpies(potentialSpies, new TeamRespawnEvent(initialPlayers, SpawnableTeamType.None), totalPlayers, howManyGuardCISpies, AllCurrentSpies[Utility.CustomTeams.Guards]);
                         foreach (Player potentialSpy in potentialSpies)
                         {
-                            if (CurrentCiSpies.Add(potentialSpy))
+                            if (AllCurrentSpies[Utility.CustomTeams.Chaos].Add(potentialSpy))
                             {
                                 ChangeSpawnInventory(potentialSpy, SpyUtilityNW.Instance.Config.GuardSpyLoadout, Utility.CustomTeams.Chaos);
+                                AllCurrentSpies[Utility.CustomTeams.Guards].Add(potentialSpy);
                             }
                         }
                         break;
@@ -188,10 +177,10 @@ namespace SpyUtilityNW
                         }
                     } 
                 
-                    TryToAddSpies(potentialSpies, respawningEvent, totalPlayers, howManyMtfSpies, CurrentMtfSpies);
+                    TryToAddSpies(potentialSpies, respawningEvent, totalPlayers, howManyMtfSpies, AllCurrentSpies[Utility.CustomTeams.Mtf]);
                     foreach (Player potentialSpy in potentialSpies)
                     {
-                         if (CurrentMtfSpies.Add(potentialSpy))
+                         if (AllCurrentSpies[Utility.CustomTeams.Mtf].Add(potentialSpy))
                          {
                              ChangeSpawnInventory(potentialSpy, SpyUtilityNW.Instance.Config.MtfSpyLoadout, Utility.CustomTeams.Mtf);
                          }
@@ -210,11 +199,11 @@ namespace SpyUtilityNW
                             howManyCiSpies++;
                         }
                     } 
-                    TryToAddSpies(potentialSpies, respawningEvent, totalPlayers, howManyCiSpies, CurrentCiSpies);
+                    TryToAddSpies(potentialSpies, respawningEvent, totalPlayers, howManyCiSpies, AllCurrentSpies[Utility.CustomTeams.Chaos]);
                     // Technically this can be reduced in TryToAddSpies to just add to static but I feel that is not safe.
                     foreach (Player potentialSpy in potentialSpies)
                     {
-                        if (CurrentCiSpies.Add(potentialSpy))
+                        if (AllCurrentSpies[Utility.CustomTeams.Chaos].Add(potentialSpy))
                         {
                             ChangeSpawnInventory(potentialSpy, SpyUtilityNW.Instance.Config.CiSpyLoadout, Utility.CustomTeams.Chaos);
                         }
@@ -353,11 +342,14 @@ namespace SpyUtilityNW
             switch (team)
             {
                 case Utility.CustomTeams.Chaos:
+                    AllCurrentSpies[Utility.CustomTeams.Chaos].Add(player);
+                    break;
                 case Utility.CustomTeams.Guards:
-                    CurrentCiSpies.Add(player);
+                    AllCurrentSpies[Utility.CustomTeams.Chaos].Add(player);
+                    AllCurrentSpies[Utility.CustomTeams.Guards].Add(player);
                     break;
                 case Utility.CustomTeams.Mtf:
-                    CurrentMtfSpies.Add(player);
+                    AllCurrentSpies[Utility.CustomTeams.Mtf].Add(player);
                     break;
                 default:
                     return false;
@@ -470,7 +462,7 @@ namespace SpyUtilityNW
             Player curTarget = Player.Get(target.ReferenceHub.netId);
 
            
-            RevealStatus wasCiSpyRevealed = CheckIfCiSpyReveal(attackerTeam, targetTeam, curAttacker, curTarget, CurrentCiSpies, CurrentMtfSpies);
+            RevealStatus wasCiSpyRevealed = CheckIfCiSpyReveal(attackerTeam, targetTeam, curAttacker, curTarget, AllCurrentSpies[Utility.CustomTeams.Chaos], AllCurrentSpies[Utility.CustomTeams.Mtf]);
             Log.Debug($"wasCISpyRevealed result { wasCiSpyRevealed }", SpyUtilityNW.Instance.Config.Debug);
             switch (wasCiSpyRevealed)
             {
@@ -485,7 +477,7 @@ namespace SpyUtilityNW
                 case RevealStatus.RejectDamage:
                     return false;
             }
-            RevealStatus wasMtfSpyRevealed = CheckIfMtfSpyReveal(attackerTeam, targetTeam, curAttacker, curTarget, CurrentMtfSpies, CurrentCiSpies);
+            RevealStatus wasMtfSpyRevealed = CheckIfMtfSpyReveal(attackerTeam, targetTeam, curAttacker, curTarget, AllCurrentSpies[Utility.CustomTeams.Mtf], AllCurrentSpies[Utility.CustomTeams.Chaos]);
             Log.Debug($"wasMtfSpyRevealed result { wasMtfSpyRevealed }", SpyUtilityNW.Instance.Config.Debug);
             switch (wasMtfSpyRevealed)
             {
@@ -508,7 +500,7 @@ namespace SpyUtilityNW
             Player curTarget, ISet<Player> mtfSpies, ISet<Player> enemySpies)
         {
             // If spy has not been revealed yet, reject damage.
-            if (attackerTeam is Team.FoundationForces or Team.Scientists && CurrentCiSpies.Contains(curTarget) && !CurrentMtfSpies.Contains(curAttacker))
+            if (attackerTeam is Team.FoundationForces or Team.Scientists && AllCurrentSpies[Utility.CustomTeams.Chaos].Contains(curTarget) && !mtfSpies.Contains(curAttacker))
             {
                 Log.Debug($"FoundationForces Spy has not been revealed yet, reject damage. CheckIfMtfSpyReveal", SpyUtilityNW.Instance.Config.Debug);
                 return RevealStatus.RejectDamage;
@@ -525,15 +517,15 @@ namespace SpyUtilityNW
             }
 
             // If we're both spies, normal damage
-            if ((CurrentCiSpies.Contains(curAttacker) && CurrentMtfSpies.Contains(curTarget)) || 
-                (CurrentMtfSpies.Contains(curAttacker) && CurrentCiSpies.Contains(curTarget)))
+            if ((AllCurrentSpies[Utility.CustomTeams.Chaos].Contains(curAttacker) && mtfSpies.Contains(curTarget)) || 
+                (mtfSpies.Contains(curAttacker) && AllCurrentSpies[Utility.CustomTeams.Chaos].Contains(curTarget)))
             {
                 Log.Debug($"If we're both spies, normal damage. CheckIfMtfSpyReveal", SpyUtilityNW.Instance.Config.Debug);
                 return RevealStatus.AllowNormalDamage;
             }
             
             // If target is MTF, and Chaos agent is MTF spy, do no damage
-            if (targetTeam is Team.FoundationForces or Team.Scientists && CurrentMtfSpies.Contains(curAttacker))
+            if (targetTeam is Team.FoundationForces or Team.Scientists && mtfSpies.Contains(curAttacker))
             {
                 Log.Debug($"If target is MTF, and Chaos agent is MTF spy, do no damage. CheckIfMtfSpyReveal", SpyUtilityNW.Instance.Config.Debug);
                 var attackingTeammateOnSameTeam = string.Format(SpyUtilityNW.Instance.Config.OnSpyAttackingTeammate,
@@ -543,7 +535,7 @@ namespace SpyUtilityNW
             }
             
             // If attacker is MTF, and the target is Chaos agent who is MTF spy, do no damage.
-            if (attackerTeam is Team.FoundationForces or Team.Scientists && CurrentMtfSpies.Contains(curTarget))
+            if (attackerTeam is Team.FoundationForces or Team.Scientists && mtfSpies.Contains(curTarget))
             {
                 Log.Debug($"If attacker is MTF, and the target is Chaos agent who is MTF spy, do no damage. CheckIfMtfSpyReveal", SpyUtilityNW.Instance.Config.Debug);
                 var attackingSpyOnSameTeam = string.Format(SpyUtilityNW.Instance.Config.OnTeammateAttackingSpy,
@@ -561,7 +553,7 @@ namespace SpyUtilityNW
             Player curTarget, ISet<Player> currentCiSpies, ISet<Player> enemySpies)
         {
             // If spy has not been revealed yet, reject damage.
-            if (attackerTeam is Team.ChaosInsurgency or Team.ClassD && CurrentMtfSpies.Contains(curTarget)&& !currentCiSpies.Contains(curAttacker))
+            if (attackerTeam is Team.ChaosInsurgency or Team.ClassD && enemySpies.Contains(curTarget)&& !currentCiSpies.Contains(curAttacker))
             {
                 Log.Debug($"Spy has not been revealed yet, reject damage. CheckIfCiSpyReveal", SpyUtilityNW.Instance.Config.Debug);
                 return RevealStatus.RejectDamage;
@@ -579,15 +571,15 @@ namespace SpyUtilityNW
             }
             
             // Spies do not reveal each other and do normal damage.
-            if ((CurrentCiSpies.Contains(curAttacker) && CurrentMtfSpies.Contains(curTarget)) || 
-                (CurrentMtfSpies.Contains(curAttacker) && CurrentCiSpies.Contains(curTarget)))
+            if ((currentCiSpies.Contains(curAttacker) && enemySpies.Contains(curTarget)) || 
+                (enemySpies.Contains(curAttacker) && currentCiSpies.Contains(curTarget)))
             {
                 Log.Debug($"Spies do not reveal each other and do normal damage.foundation forces CheckIfCiSpyReveal", SpyUtilityNW.Instance.Config.Debug);
                 return RevealStatus.AllowNormalDamage;
             }
 
             // If I am a CI Spy attacking Chaos, I do no damage
-            if (targetTeam is Team.ChaosInsurgency or Team.ClassD && CurrentCiSpies.Contains(curAttacker))
+            if (targetTeam is Team.ChaosInsurgency or Team.ClassD && currentCiSpies.Contains(curAttacker))
             {
                 Log.Debug($"If I am a CI Spy attacking Chaos, I do no damage. CheckIfCiSpyReveal", SpyUtilityNW.Instance.Config.Debug);
                 var attackingTeammateOnSameTeam = string.Format(SpyUtilityNW.Instance.Config.OnSpyAttackingTeammate,
@@ -597,7 +589,7 @@ namespace SpyUtilityNW
             }
             
             // If I am chaos attacking CI spy, I do no damage
-            if (attackerTeam is Team.ChaosInsurgency or Team.ClassD && CurrentCiSpies.Contains(curTarget))
+            if (attackerTeam is Team.ChaosInsurgency or Team.ClassD && currentCiSpies.Contains(curTarget))
             {
                 Log.Debug($"If I am chaos attacking CI spy, I do no damage. CheckIfCiSpyReveal", SpyUtilityNW.Instance.Config.Debug);
                 var attackingTeammateOnSameTeam = string.Format(SpyUtilityNW.Instance.Config.OnTeammateAttackingSpy,
@@ -673,6 +665,11 @@ namespace SpyUtilityNW
         [UsedImplicitly]
         public void OnRoleChange( IPlayer curPlayer, PlayerRoleBase curRoleBase, RoleTypeId curRoleId, RoleChangeReason curRoleChangeReason)
         {
+            Log.Info("UH HEY");
+            Log.Info($"{curPlayer},");
+            Log.Info($", {curPlayer.ReferenceHub.roleManager.CurrentRole}, ");
+            Log.Info($",  {RoleChangeReason.LateJoin}, ");
+            Log.Info($", {RoleChangeReason.Respawn}, ");
             if (curRoleChangeReason is RoleChangeReason.RemoteAdmin)
             {
                 RemoveFromSpies(curPlayer);
@@ -704,6 +701,53 @@ namespace SpyUtilityNW
                     SpyUtilityNW.Instance.Config.Debug);
             }
 
+            if (SpyUtilityNW.Instance.Config.RevealIfSolo)
+            {
+                bool atLeastOneScp = false;
+                HashSet<Player> chaosPlayers = new HashSet<Player>();
+                HashSet<Player> mtfPlayers = new HashSet<Player>();
+                foreach (Player player in Player.GetPlayers())
+                {
+                    if (player.IsSCP)
+                    {
+                        atLeastOneScp = true;
+                    }
+
+                    if (player.IsChaos)
+                    {
+                        if (!AllCurrentSpies[Utility.CustomTeams.Chaos].Contains(player))
+                        {
+                            chaosPlayers.Append(player);
+                        }
+                    }
+
+                    if (player.IsNTF)
+                    {
+                        if (!AllCurrentSpies[Utility.CustomTeams.Mtf].Contains(player))
+                        {
+                            mtfPlayers.Append(player);
+                        }
+                    }
+                }
+
+                if (!atLeastOneScp)
+                {
+                    if (!chaosPlayers.IsEmpty())
+                    {
+                        RevealSpies(Utility.CustomTeams.Chaos);
+                    }
+
+                    if (!mtfPlayers.IsEmpty())
+                    {
+                        RevealSpies(Utility.CustomTeams.Mtf);
+                    }
+                }
+                // if (Player.GetPlayers().Count(player => player.IsSCP) <= 0)
+                // {
+                //     
+                // }
+            }
+
             RemoveFromSpies(target);
         }
 
@@ -714,11 +758,11 @@ namespace SpyUtilityNW
         {
             foreach (Player player in Player.GetPlayers())
             {
-                if (CurrentCiSpies.Contains(player))
+                if (AllCurrentSpies[Utility.CustomTeams.Chaos].Contains(player))
                 {
                     ChangeAppearance(player, SpyUtilityNW.Instance.Config.CiSpyLoadout.SpyRealRole);
                 }
-                else if (CurrentMtfSpies.Contains(player))
+                else if (AllCurrentSpies[Utility.CustomTeams.Mtf].Contains(player))
                 {
                     ChangeAppearance(player, SpyUtilityNW.Instance.Config.MtfSpyLoadout.SpyRealRole);
                 }
@@ -727,15 +771,77 @@ namespace SpyUtilityNW
             }
         }
 
+        /// <summary>
+        /// Reveals current spies, and changes their appearance. 
+        /// </summary>
+        public void RevealSpies(Utility.CustomTeams team)
+        {
+            foreach (Player player in AllCurrentSpies[team])
+            {
+                RevealSpies(player, team);
+            }
+        }
+        /// <summary>
+        /// Reveals current spies, and changes their appearance. 
+        /// </summary>
+        public void RevealSpies(Player player, Utility.CustomTeams team)
+        {
+            if (AllCurrentSpies[Utility.CustomTeams.Chaos].Contains(player) && team == Utility.CustomTeams.Chaos)
+            {
+                if (AllCurrentSpies[Utility.CustomTeams.Guards].Contains(player))
+                {
+                    ChangeAppearance(player, SpyUtilityNW.Instance.Config.GuardSpyLoadout.SpyRealRole);
+                }
+                else{
+                    ChangeAppearance(player, SpyUtilityNW.Instance.Config.CiSpyLoadout.SpyRealRole);
+                }
+            }
+            else if (AllCurrentSpies[Utility.CustomTeams.Mtf].Contains(player) && team == Utility.CustomTeams.Mtf)
+            {
+                ChangeAppearance(player, SpyUtilityNW.Instance.Config.MtfSpyLoadout.SpyRealRole);
+            }
+            else if (AllCurrentSpies[team].Contains(player))
+            {
+                ChangeAppearance(player, SpyUtilityNW.Instance.Config.GuardSpyLoadout.SpyRealRole);
+            }
+            RemoveFromSpies(player);
+        }
+        
+        /// <summary>
+        /// Reveals current spies, and changes their appearance. 
+        /// </summary>
+        public void RevealSpy(Player player)
+        {
+            if (AllCurrentSpies[Utility.CustomTeams.Chaos].Contains(player))
+            {
+                if (AllCurrentSpies[Utility.CustomTeams.Guards].Contains(player))
+                {
+                    ChangeAppearance(player, SpyUtilityNW.Instance.Config.GuardSpyLoadout.SpyRealRole);
+                }
+                else
+                {
+                    ChangeAppearance(player, SpyUtilityNW.Instance.Config.CiSpyLoadout.SpyRealRole);
+                }
+            }
+            else if (AllCurrentSpies[Utility.CustomTeams.Mtf].Contains(player))
+            {
+                ChangeAppearance(player, SpyUtilityNW.Instance.Config.MtfSpyLoadout.SpyRealRole);
+            }
+            RemoveFromSpies(player);
+        }
+
         private static void RemoveFromSpies(IPlayer target)
         {
-            Player potentialSpy = Player.Get(target.ReferenceHub.netId);
+            Player potentialSpy = Player.Get(target.ReferenceHub);
             if (potentialSpy == null)
             {
                 return;
             }
-            CurrentCiSpies.Remove(potentialSpy);
-            CurrentMtfSpies.Remove(potentialSpy);
+            
+            foreach (KeyValuePair<Utility.CustomTeams,ISet<Player>> allCurrentSpy in AllCurrentSpies)
+            {
+                allCurrentSpy.Value.Remove(potentialSpy);
+            }
         }
         
         private static void RemoveFromSpies(IPlayer target, Utility.CustomTeams team)
@@ -745,10 +851,11 @@ namespace SpyUtilityNW
             {
                 case Utility.CustomTeams.Chaos:
                 case Utility.CustomTeams.Guards:
-                    CurrentCiSpies.Remove(potentialSpy);
+                    AllCurrentSpies[Utility.CustomTeams.Chaos].Remove(potentialSpy);
+                    AllCurrentSpies[Utility.CustomTeams.Guards].Remove(potentialSpy);
                     break;
                 case Utility.CustomTeams.Mtf:
-                    CurrentMtfSpies.Remove(potentialSpy);
+                    AllCurrentSpies[Utility.CustomTeams.Mtf].Remove(potentialSpy);
                     break;
             }
         }
